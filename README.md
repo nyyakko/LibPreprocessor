@@ -59,5 +59,41 @@ int main()
 }
 ```
 
+```c++
+#include <liberror/ErrorOr.hpp>
+#include <libpreprocessor/Preprocessor.hpp>
+
+#include <print>
+
+int main()
+{
+    libpreprocessor::PreprocessorContext context {};
+
+    std::print("Do you like potatoes? [yes/no] ");
+    std::string name {};
+    std::cin >> name;
+
+    libpreprocessor::PreprocessorContext context {
+        .localVariables = {},
+        .environmentVariables = {
+            { "ENV:LIKEPOTATOES", name },
+        }
+    };
+
+    auto static constexpr source =
+        "i wonder what will happen to this line...\n"
+        "%IF [<ENV:LIKEPOTATOES> EQUALS <yes>]:\n"
+        "    awesome!\n"
+        "%ELSE:\n"
+        "    what a shame!\n"
+        "%END\n"
+        "this line too..."sv;
+
+    auto const result = MUST(libpreprocessor::preprocess(source, context));
+
+    std::println("{}", result);
+}
+```
+
 i recommend you to simply explore the code and see what you can do with it. seriously. do it.
 
