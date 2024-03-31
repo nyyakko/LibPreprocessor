@@ -1,0 +1,12 @@
+{
+    "name": "liberror",
+    "version": "1.0.0",
+    "description": "error handling library",
+    "homepage": "https://github.com/nyyakko/LibError",
+    "dependencies": [
+        {
+            "name": "vcpkg-cmake",
+            "host": true
+        }
+    ]
+}
