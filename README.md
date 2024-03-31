@@ -28,6 +28,8 @@ target_link_libraries(CoolProject PRIVATE LibError::LibError LibPreprocessor::Li
 
 int main()
 {
+    using namespace std::literals;
+
     libpreprocessor::PreprocessorContext context {};
 
 #if 1
@@ -67,6 +69,8 @@ int main()
 
 int main()
 {
+    using namespace std::literals;
+
     libpreprocessor::PreprocessorContext context {};
 
     std::print("Do you like potatoes? [yes/no] ");
