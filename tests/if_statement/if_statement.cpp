@@ -18,6 +18,26 @@ TEST(true_if_statement_with_complex_expression, single)
     EXPECT_STREQ(result.value().data(), "    hello!\n");
 }
 
+TEST(true_if_statement_with_complex_expression_using_the_preprocessor_context, single)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {
+        .localVariables = {},
+        .environmentVariables = {
+            { "ENV:TEST", "TESTING" }
+        }
+    };
+
+    auto static constexpr source =
+        "%IF [[[NOT <FALSE>] AND [NOT <TRUE>]] OR [<TRUE> AND [<ENV:TEST> EQUALS <TESTING>]]]:\n"
+        "    hello!\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "    hello!\n");
+}
 
 TEST(true_if_statement, single)
 {
