@@ -2,6 +2,23 @@
 
 #include <libpreprocessor/Preprocessor.hpp>
 
+TEST(true_if_statement_with_complex_expression, single)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "%IF [[[NOT <FALSE>] AND [NOT <TRUE>]] OR [<TRUE> AND [NOT <FALSE>]]]:\n"
+        "    hello!\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "    hello!\n");
+}
+
+
 TEST(true_if_statement, single)
 {
     using namespace std::literals;
