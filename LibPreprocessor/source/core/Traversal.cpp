@@ -229,7 +229,7 @@ using namespace liberror;
         switch (head->type())
         {
         case INode::Type::BODY: {
-            auto* bodyNode = static_cast<BodyNode*>(head.get());
+            auto const* bodyNode = static_cast<BodyNode*>(head.get());
 
             for (auto const& subnode : bodyNode->nodes)
             {
@@ -244,7 +244,7 @@ using namespace liberror;
             switch (statement->statement_type())
             {
             case IStatementNode::Type::CONDITIONAL: {
-                auto* node = static_cast<ConditionalStatementNode*>(statement);
+                auto const* node = static_cast<ConditionalStatementNode*>(statement);
 
                 if (TRY(evaluate_expression(node->condition, context)) == "TRUE")
                 {
@@ -258,7 +258,7 @@ using namespace liberror;
                 break;
             }
             case IStatementNode::Type::UNCONDITIONAL: {
-                auto* node = static_cast<UnconditionalStatementNode*>(statement);
+                auto const* node = static_cast<UnconditionalStatementNode*>(statement);
                 TRY(traverse(node->branch, stream, context));
                 break;
             }

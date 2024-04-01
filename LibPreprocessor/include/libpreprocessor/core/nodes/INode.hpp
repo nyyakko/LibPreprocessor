@@ -3,9 +3,9 @@
 #include <memory>
 #include <list>
 
-#define NODE_TYPE(TYPE)                                                   \
-constexpr virtual Type type() override { return TYPE; }                   \
-constexpr virtual char const* type_as_string() override { return #TYPE; } \
+#define NODE_TYPE(TYPE)                                                         \
+constexpr virtual Type type() const override { return TYPE; }                   \
+constexpr virtual char const* type_as_string() const override { return #TYPE; } \
 
 namespace libpreprocessor {
 
@@ -26,8 +26,8 @@ struct INode
 
     virtual ~INode() = default;
 
-    constexpr virtual Type type() = 0;
-    constexpr virtual char const* type_as_string() = 0;
+    constexpr virtual Type type() const = 0;
+    constexpr virtual char const* type_as_string() const = 0;
 
     std::list<std::unique_ptr<INode>> nodes {};
 };

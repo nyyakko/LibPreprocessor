@@ -2,9 +2,9 @@
 
 #include "INode.hpp"
 
-#define STATEMENT_TYPE(TYPE)                                                        \
-constexpr virtual Type statement_type() override { return TYPE; }                   \
-constexpr virtual char const* statement_type_as_string() override { return #TYPE; } \
+#define STATEMENT_TYPE(TYPE)                                                              \
+constexpr virtual Type statement_type() const override { return TYPE; }                   \
+constexpr virtual char const* statement_type_as_string() const override { return #TYPE; } \
 
 namespace libpreprocessor {
 
@@ -24,8 +24,8 @@ struct IStatementNode : INode
     };
 
     virtual ~IStatementNode() = default;
-    virtual Type statement_type() = 0;
-    virtual char const* statement_type_as_string() = 0;
+    virtual Type statement_type() const = 0;
+    virtual char const* statement_type_as_string() const = 0;
 
 private:
     using INode::nodes;
