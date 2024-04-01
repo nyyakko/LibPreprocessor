@@ -9,6 +9,9 @@ struct PrintStatementNode : IStatementNode
     STATEMENT_TYPE(IStatementNode::Type::PRINT);
     virtual ~PrintStatementNode() override = default;
     std::unique_ptr<INode> content {};
+
+private:
+    using INode::nodes;
 };
 
 } // libpreprocessor

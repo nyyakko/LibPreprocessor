@@ -24,6 +24,9 @@ struct OperatorNode : INode
     Arity arity {};
     std::unique_ptr<INode> lhs {};
     std::unique_ptr<INode> rhs {};
+
+private:
+    using INode::nodes;
 };
 
 } // libpreprocessor

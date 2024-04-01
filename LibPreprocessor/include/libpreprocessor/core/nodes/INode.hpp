@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <list>
 
 #define NODE_TYPE(TYPE)                                                   \
 constexpr virtual Type type() override { return TYPE; }                   \
@@ -19,7 +20,7 @@ struct INode
         CONDITION,
         OPERATOR,
         LITERAL,
-        BRANCH,
+        BODY,
         END__
     };
 
@@ -28,7 +29,7 @@ struct INode
     constexpr virtual Type type() = 0;
     constexpr virtual char const* type_as_string() = 0;
 
-    std::unique_ptr<INode> next;
+    std::list<std::unique_ptr<INode>> nodes {};
 };
 
 } // libpreprocessor

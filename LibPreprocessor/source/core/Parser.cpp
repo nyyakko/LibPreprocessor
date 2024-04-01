@@ -3,6 +3,7 @@
 #include "core/nodes/INode.hpp"
 #include "core/nodes/ConditionalStatementNode.hpp"
 #include "core/nodes/ContentNode.hpp"
+#include "core/nodes/BodyNode.hpp"
 #include "core/nodes/ExpressionNode.hpp"
 #include "core/nodes/LiteralNode.hpp"
 #include "core/nodes/OperatorNode.hpp"
@@ -12,48 +13,15 @@
 #include "core/nodes/UnconditionalStatementNode.hpp"
 
 #include <algorithm>
+#include <list>
 
 namespace libpreprocessor {
 
 using namespace liberror;
 
-    namespace {
-
-    ErrorOr<void> parse_statement_body(Parser& parser, std::unique_ptr<INode>& root, size_t depth)
-    {
-        auto body = std::ref(root);
-
-        while (!parser.eof())
-        {
-            auto token = parser.take();
-
-            if (is_percent(token))
-            {
-                auto const& front = parser.peek();
-                parser.tokens().push(std::move(token));
-                if (!(is_keyword(front) && (front.data == "END" || front.data == "ELSE" || front.data == "DEFAULT")))
-                    body.get() = TRY(parser.parse(depth));
-                else
-                    break;
-            }
-            else
-            {
-                auto content     = std::make_unique<ContentNode>();
-                content->content = token.data;
-                body.get()       = std::move(content);
-            }
-
-            body = body.get()->next;
-        }
-
-        return {};
-    }
-
-    }
-
-ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
+ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 {
-    std::unique_ptr<INode> root {};
+    std::unique_ptr<INode> root = std::make_unique<BodyNode>();
 
     while (!eof())
     {
@@ -67,16 +35,21 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
                 return make_error("Expecting a node of type \"Token::Type::KEYWORD\" after \"%\", but instead got \"{}\".", token.type_as_string());
             }
 
-            if (peek().data == "END") return root;
+            if (peek().data == "END") { tokens().push(token); return root; }
+            if (child > parent && (peek().data == "ELSE" || peek().data == "DEFAULT")) { tokens().push(token); return root; }
 
             auto const innerToken = take();
 
+            std::unique_ptr<INode> statementNode {};
+
             if (innerToken.data == "IF")
             {
-                auto statementNode           = std::make_unique<ConditionalStatementNode>();
-                statementNode->condition     = TRY(parse(depth + 1));
-                statementNode->branch.first  = TRY(parse(depth + 1));
-                statementNode->branch.second = TRY(parse(depth + 1));
+                auto conditionalStatement           = std::make_unique<ConditionalStatementNode>();
+                conditionalStatement->condition     = TRY(parse(parent, child));
+                conditionalStatement->branch.first  = TRY(parse(child, child + 1));
+                conditionalStatement->branch.second = TRY(parse(child, parent));
+
+                take();
 
                 if (eof() || peek().data != "END")
                 {
@@ -85,23 +58,20 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
 
                 take();
 
-                if (depth != 0) { return statementNode; }
-
-                root = std::move(statementNode);
-                root->next = TRY(parse(depth));
+                statementNode = std::move(conditionalStatement);
             }
             else if (innerToken.data == "ELSE")
             {
-                auto statementNode    = std::make_unique<UnconditionalStatementNode>();
-                statementNode->branch = TRY(parse(depth + 1));
-                root                  = std::move(statementNode);
+                return TRY(parse(parent, child + 1));
             }
             else if (innerToken.data == "SWITCH")
             {
-                auto statementNode             = std::make_unique<SelectionStatementNode>();
-                statementNode->match           = TRY(parse(depth + 1));
-                statementNode->branches.first  = TRY(parse(depth + 1));
-                statementNode->branches.second = TRY(parse(depth + 1));
+                auto selectionStatementNode             = std::make_unique<SelectionStatementNode>();
+                selectionStatementNode->match           = TRY(parse(parent, child + 1));
+                selectionStatementNode->branches.first  = TRY(parse(child, child + 1));
+                selectionStatementNode->branches.second = TRY(parse(child, parent));
+
+                take();
 
                 if (eof() || peek().data != "END")
                 {
@@ -110,19 +80,16 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
 
                 take();
 
-                if (depth != 0) { return statementNode; }
-
-                root = std::move(statementNode);
-                root->next = TRY(parse(depth));
+                statementNode = std::move(selectionStatementNode);
             }
             else if (innerToken.data == "CASE")
             {
-                auto statementNode = std::make_unique<SelectionMatchStatementNode>();
-                statementNode->match = std::unique_ptr<LiteralNode>(
+                auto selectionMatchStatementNode = std::make_unique<SelectionMatchStatementNode>();
+                selectionMatchStatementNode->match = std::unique_ptr<LiteralNode>(
                      static_cast<LiteralNode*>(
-                            static_cast<ExpressionNode*>(TRY(parse(depth + 1)).release())->value.release()
+                            static_cast<ExpressionNode*>(TRY(parse(parent, child + 1)).release())->value.release()
                     ));
-                statementNode->branch = TRY(parse(depth + 1));
+                selectionMatchStatementNode->branch = TRY(parse(child, child + 1));
 
                 take();
 
@@ -133,19 +100,17 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
 
                 take();
 
-                return statementNode;
+                statementNode = std::move(selectionMatchStatementNode);
             }
             else if (innerToken.data == "DEFAULT")
             {
-                auto statementNode   = std::make_unique<SelectionMatchStatementNode>();
-                statementNode->match = [] {
+                auto selectionMatchStatementNode   = std::make_unique<SelectionMatchStatementNode>();
+                selectionMatchStatementNode->match = [] {
                     auto literalNode   = std::make_unique<LiteralNode>();
                     literalNode->value = "DEFAULT";
                     return literalNode;
                 }();
-                statementNode->branch = TRY(parse(depth + 1));
-
-                root = std::move(statementNode);
+                selectionMatchStatementNode->branch = TRY(parse(child, child + 1));
 
                 take();
 
@@ -155,25 +120,30 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
                 }
 
                 take();
+
+                return selectionMatchStatementNode;
             }
             else if (innerToken.data == "PRINT")
             {
-                auto statementNode = std::make_unique<PrintStatementNode>();
-                statementNode->content = TRY(parse(depth + 1));
-                if (depth != 0) { return statementNode; }
-                root = std::move(statementNode);
-                root->next = TRY(parse(depth));
+                auto printStatementNode = std::make_unique<PrintStatementNode>();
+                printStatementNode->content = TRY(parse(parent, child + 1));
+                statementNode = std::move(printStatementNode);
             }
             else
             {
                 return make_error("Unexpected keyword \"{}\" was reached.", innerToken.data);
             }
 
+            if (root == nullptr)
+                root = std::move(statementNode);
+            else
+                root->nodes.push_back(std::move(statementNode));
+
             break;
         }
         case Token::Type::LEFT_SQUARE_BRACKET: {
             auto expressionNode   = std::make_unique<ExpressionNode>();
-            expressionNode->value = TRY(parse(depth + 1));
+            expressionNode->value = TRY(parse(parent, child + 1));
 
             if (eof() || !is_right_square_bracket(peek()))
             {
@@ -199,8 +169,8 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
             break;
         }
         case Token::Type::COLON: {
-            TRY(parse_statement_body(*this, root, depth));
-            return root;
+            root = std::make_unique<BodyNode>();
+            break;
         }
         case Token::Type::IDENTIFIER: {
             // FIXME: for now, all identifiers *must* be an operator. maybe we should be fixin' this in the future?
@@ -215,11 +185,11 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
                 return OperatorNode::Arity{};
             }();
 
-            operatorNode->lhs = (root == nullptr) ? TRY(parse(depth + 1)) : std::move(root);
+            operatorNode->lhs = (root == nullptr) ? TRY(parse(parent, child + 1)) : std::move(root);
 
             if (operatorNode->arity == OperatorNode::Arity::BINARY)
             {
-                operatorNode->rhs = TRY(parse(depth + 1));
+                operatorNode->rhs = TRY(parse(parent, child + 1));
             }
 
             return operatorNode;
@@ -228,14 +198,18 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(size_t depth = 0)
         case Token::Type::CONTENT: {
             auto contentNode     = std::make_unique<ContentNode>();
             contentNode->content = token.data;
-            root                 = std::move(contentNode);
-            root->next           = TRY(parse(depth));
+
+            if (root == nullptr)
+                root = std::move(contentNode);
+            else
+                root->nodes.push_back(std::move(contentNode));
+
             break;
         }
 
-        case Token::Type::LITERAL:
         case Token::Type::KEYWORD:
 
+        case Token::Type::LITERAL:
         case Token::Type::BEGIN__:
         case Token::Type::END__:
         default: {

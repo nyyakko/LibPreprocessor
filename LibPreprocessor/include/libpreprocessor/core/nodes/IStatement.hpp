@@ -26,6 +26,9 @@ struct IStatementNode : INode
     virtual ~IStatementNode() = default;
     virtual Type statement_type() = 0;
     virtual char const* statement_type_as_string() = 0;
+
+private:
+    using INode::nodes;
 };
 
 } // libpreprocessor

@@ -8,6 +8,7 @@
 #include "core/nodes/LiteralNode.hpp"
 #include "core/nodes/OperatorNode.hpp"
 #include "core/nodes/PrintNode.hpp"
+#include "core/nodes/BodyNode.hpp"
 #include "core/nodes/SelectionMatchStatementNode.hpp"
 #include "core/nodes/SelectionStatementNode.hpp"
 #include "core/nodes/UnconditionalStatementNode.hpp"
@@ -66,15 +67,15 @@ using namespace liberror;
             return result;
         }
 
-        ErrorOr<std::string> interpolate_string(std::string_view unquotedValue, PreprocessorContext const& context)
+        ErrorOr<std::string> interpolate_string(std::string_view string, PreprocessorContext const& context)
         {
-            if (unquotedValue.empty()) return make_error("Tried to interpolate an empty string.");
+            if (string.empty()) return make_error("Tried to interpolate an empty string.");
 
             std::string result {};
 
-            for (auto index = 0zu; index < unquotedValue.size(); index += 1)
+            for (auto index = 0zu; index < string.size(); index += 1)
             {
-                if (unquotedValue.at(index) == '<')
+                if (string.at(index) == '<')
                 {
                     std::function<std::pair<std::string, std::string>()> fnParseIdentifier {};
 
@@ -82,12 +83,12 @@ using namespace liberror;
                         std::string value {};
 
                         index += 1;
-                        while (unquotedValue.at(index) != '>')
+                        while (string.at(index) != '>')
                         {
-                            if (unquotedValue.at(index) == '<') value = fnParseIdentifier().first;
+                            if (string.at(index) == '<') value = fnParseIdentifier().first;
                             else
                             {
-                                value += unquotedValue.at(index);
+                                value += string.at(index);
                                 index += 1;
                             }
                         }
@@ -106,7 +107,7 @@ using namespace liberror;
                 }
                 else
                 {
-                    result += unquotedValue.at(index);
+                    result += string.at(index);
                 }
             }
 
@@ -151,7 +152,10 @@ using namespace liberror;
                 switch (operatorNode->arity)
                 {
                 case OperatorNode::Arity::UNARY: {
-                    auto const& lhs = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
+                    auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
+                        auto value = unquoted(static_cast<LiteralNode*>(operatorNode->lhs.get())->value);
+                        return TRY(interpolate_string(value, context));
+                    }());
 
                     if (operatorNode->name == "NOT")
                     {
@@ -166,19 +170,15 @@ using namespace liberror;
                         return make_error("Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
                     }
 
-                    auto const lhs = [&] {
+                    auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
                         auto value = unquoted(static_cast<LiteralNode*>(operatorNode->lhs.get())->value);
-                        if (context.localVariables.contains(value)) return context.localVariables.at(value);
-                        if (context.environmentVariables.contains(value)) return context.environmentVariables.at(value);
-                        return value;
-                    }();
+                        return TRY(interpolate_string(value, context));
+                    }());
 
-                    auto const rhs = [&] {
+                    auto const rhs = TRY([&] -> liberror::ErrorOr<std::string> {
                         auto value = unquoted(static_cast<LiteralNode*>(operatorNode->rhs.get())->value);
-                        if (context.localVariables.contains(value)) return context.localVariables.at(value);
-                        if (context.environmentVariables.contains(value)) return context.environmentVariables.at(value);
-                        return value;
-                    }();
+                        return TRY(interpolate_string(value, context));
+                    }());
 
                     if (operatorNode->name == "CONTAINS") { return std::ranges::contains_subrange(lhs, rhs) ? "TRUE" : "FALSE"; }
                     if (operatorNode->name == "EQUALS") { return lhs == rhs ? "TRUE" : "FALSE"; }
@@ -211,7 +211,7 @@ using namespace liberror;
             case INode::Type::STATEMENT:
             case INode::Type::CONTENT:
             case INode::Type::CONDITION:
-            case INode::Type::BRANCH:
+            case INode::Type::BODY:
             case INode::Type::END__: {
                 return make_error("Unexpected node of type \"{}\" was reached.", headExpression->type_as_string());
             }
@@ -222,12 +222,22 @@ using namespace liberror;
 
         }
 
-    static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context, size_t depth)
+    static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
     {
         if (!head) { return make_error("Head node was nullptr."); }
 
         switch (head->type())
         {
+        case INode::Type::BODY: {
+            auto* bodyNode = static_cast<BodyNode*>(head.get());
+
+            for (auto const& subnode : bodyNode->nodes)
+            {
+                TRY(traverse(subnode, stream, context));
+            }
+
+            break;
+        }
         case INode::Type::STATEMENT: {
             auto* statement = static_cast<IStatementNode*>(head.get());
 
@@ -238,26 +248,18 @@ using namespace liberror;
 
                 if (TRY(evaluate_expression(node->condition, context)) == "TRUE")
                 {
-                    for (auto body = std::ref(node->branch.first); body.get() != nullptr; body = body.get()->next)
-                    {
-                        TRY(traverse(body.get(), stream, context, depth + 1));
-                    }
+                    TRY(traverse(node->branch.first, stream, context));
                 }
                 else if (node->branch.second)
                 {
-                    TRY(traverse(node->branch.second, stream, context, depth + 1));
+                    TRY(traverse(node->branch.second, stream, context));
                 }
 
                 break;
             }
             case IStatementNode::Type::UNCONDITIONAL: {
                 auto* node = static_cast<UnconditionalStatementNode*>(statement);
-
-                for (auto body = std::ref(node->branch); body.get() != nullptr; body = body.get()->next)
-                {
-                    TRY(traverse(body.get(), stream, context, depth + 1));
-                }
-
+                TRY(traverse(node->branch, stream, context));
                 break;
             }
             case IStatementNode::Type::MATCH: {
@@ -271,12 +273,13 @@ using namespace liberror;
                 auto match = TRY(evaluate_expression(node->match, context));
                 bool hasHandledNormalCase = false;
 
-                for (auto* cases = static_cast<SelectionMatchStatementNode*>(node->branches.first.get());
-                        cases != nullptr; cases = static_cast<SelectionMatchStatementNode*>(cases->next.get()))
+                for (auto const& subnode : node->branches.first->nodes)
                 {
-                    if (unquoted(static_cast<LiteralNode*>(cases->match.get())->value) == match)
+                    auto* selectionMatchStatementNode = static_cast<SelectionMatchStatementNode*>(subnode.get());
+
+                    if (unquoted(static_cast<LiteralNode*>(selectionMatchStatementNode->match.get())->value) == match)
                     {
-                        TRY(traverse(cases->branch, stream, context, depth + 1));
+                        TRY(traverse(selectionMatchStatementNode->branch, stream, context));
                         hasHandledNormalCase = true;
                         break;
                     }
@@ -284,12 +287,11 @@ using namespace liberror;
 
                 if (!hasHandledNormalCase && node->branches.second)
                 {
-                    TRY(traverse(static_cast<SelectionMatchStatementNode*>(node->branches.second.get())->branch, stream, context, depth + 1));
+                    TRY(traverse(static_cast<SelectionMatchStatementNode*>(node->branches.second.get())->branch, stream, context));
                 }
 
                 break;
             }
-
             case IStatementNode::Type::PRINT: {
                 auto* node = static_cast<PrintStatementNode*>(statement);
 
@@ -330,21 +332,12 @@ using namespace liberror;
         case INode::Type::CONDITION:
         case INode::Type::OPERATOR:
         case INode::Type::LITERAL:
-        case INode::Type::BRANCH:
 
         case INode::Type::START__:
         case INode::Type::END__:
         default: {
             return make_error("Unexpected node of type \"{}\" was reached.", head->type_as_string());
         }
-        }
-
-        if (depth == 0)
-        {
-            for (auto currentHead = std::ref(head->next); currentHead.get() != nullptr; currentHead = currentHead.get()->next)
-            {
-                TRY(traverse(currentHead.get(), stream, context, depth + 1));
-            }
         }
 
         return {};
@@ -355,7 +348,7 @@ using namespace liberror;
 ErrorOr<std::string> traverse(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
 {
     std::stringstream sourceStream {};
-    TRY(detail::traverse(head, sourceStream, context, 0));
+    TRY(detail::traverse(head, sourceStream, context));
     return sourceStream.str();
 }
 

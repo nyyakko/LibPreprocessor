@@ -18,8 +18,8 @@ public:
         : tokens_m { tokens | std::views::reverse | std::ranges::to<std::stack>() }
     {}
 
-    liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse(0); }
-    liberror::ErrorOr<std::unique_ptr<INode>> parse(size_t depth);
+    liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse(0, 0); }
+    liberror::ErrorOr<std::unique_ptr<INode>> parse(int64_t parent, int64_t child);
 
     bool eof() const noexcept { return tokens_m.empty(); }
     Token const& peek() { return tokens_m.top(); }

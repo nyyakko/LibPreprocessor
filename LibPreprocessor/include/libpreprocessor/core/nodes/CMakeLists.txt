@@ -7,6 +7,7 @@ set(LibPreprocessor_HeaderFiles ${LibPreprocessor_HeaderFiles}
     "${DIR}/SelectionMatchStatementNode.hpp"
     "${DIR}/PrintNode.hpp"
     "${DIR}/OperatorNode.hpp"
+    "${DIR}/BodyNode.hpp"
     "${DIR}/LiteralNode.hpp"
     "${DIR}/IStatement.hpp"
     "${DIR}/INode.hpp"
