@@ -2,13 +2,12 @@ cmake_minimum_required(VERSION 3.25)
 
 project(LibPreprocessor LANGUAGES CXX)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(EXPORT_DIR "${CMAKE_SOURCE_DIR}/build/cmake")
 
-include(static_analyzers)
-include(CPM)
-include(remote_clone)
-include(enable_tests)
+include(cmake/static_analyzers.cmake)
+include(cmake/CPM.cmake)
+include(cmake/remote_clone.cmake)
+include(cmake/enable_tests.cmake)
 include(GNUInstallDirs)
 
 option(ENABLE_CLANGTIDY "" TRUE)
