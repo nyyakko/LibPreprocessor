@@ -111,6 +111,9 @@ using namespace liberror;
                 }
             }
 
+            if (context.localVariables.contains(result)) return context.localVariables.at(result);
+            if (context.environmentVariables.contains(result)) return context.environmentVariables.at(result);
+
             return result;
         }
 
@@ -228,16 +231,6 @@ using namespace liberror;
 
         switch (head->type())
         {
-        case INode::Type::BODY: {
-            auto const* bodyNode = static_cast<BodyNode*>(head.get());
-
-            for (auto const& subnode : bodyNode->nodes)
-            {
-                TRY(traverse(subnode, stream, context));
-            }
-
-            break;
-        }
         case INode::Type::STATEMENT: {
             auto* statement = static_cast<IStatementNode*>(head.get());
 
@@ -327,6 +320,9 @@ using namespace liberror;
 
             break;
         }
+        case INode::Type::BODY: {
+            break;
+        }
 
         case INode::Type::EXPRESSION:
         case INode::Type::CONDITION:
@@ -338,6 +334,11 @@ using namespace liberror;
         default: {
             return make_error("Unexpected node of type \"{}\" was reached.", head->type_as_string());
         }
+        }
+
+        for (auto const& subnode : head->nodes)
+        {
+            TRY(traverse(subnode, stream, context));
         }
 
         return {};

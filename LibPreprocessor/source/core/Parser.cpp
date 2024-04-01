@@ -21,7 +21,7 @@ using namespace liberror;
 
 ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 {
-    std::unique_ptr<INode> root = std::make_unique<BodyNode>();
+    std::unique_ptr<INode> root = nullptr;
 
     while (!eof())
     {

@@ -2,6 +2,198 @@
 
 #include <libpreprocessor/Preprocessor.hpp>
 
+TEST(multiple_switch_statement_no_match, single_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "");
+}
+
+TEST(multiple_switch_statement_no_match, multiple_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %CASE [<2>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %CASE [<2>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "");
+}
+
+TEST(surrounded_multiple_switch_statement_no_match, single_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "hello!\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "hello!\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "hello!\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "hello!\nhello!\nhello!\n");
+}
+
+TEST(surrounded_multiple_switch_statement_no_match, multiple_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "hello!\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %CASE [<2>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "hello!\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %CASE [<2>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "hello!\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "hello!\nhello!\nhello!\n");
+}
+
+TEST(switch_statement_no_match, single_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "");
+}
+
+TEST(switch_statement_no_match, multiple_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %CASE [<2>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "");
+}
+
+TEST(surrounded_switch_statement_no_match, single_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "hello!\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "hello!\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "hello!\nhello!\n");
+}
+
+TEST(surrounded_switch_statement_no_match, multiple_case_no_default)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "hello!\n"
+        "%SWITCH [<0>]:\n"
+        "    %CASE [<1>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %CASE [<2>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "hello!\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), false);
+    EXPECT_STREQ(result.value().data(), "hello!\nhello!\n");
+}
+
 TEST(switch_statement, single_case_no_default)
 {
     using namespace std::literals;
