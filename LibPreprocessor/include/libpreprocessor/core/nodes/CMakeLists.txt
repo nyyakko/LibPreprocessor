@@ -9,6 +9,7 @@ set(LibPreprocessor_HeaderFiles ${LibPreprocessor_HeaderFiles}
     "${DIR}/OperatorNode.hpp"
     "${DIR}/LiteralNode.hpp"
     "${DIR}/IStatement.hpp"
+    "${DIR}/INode.hpp"
     "${DIR}/ExpressionNode.hpp"
     "${DIR}/ContentNode.hpp"
 
