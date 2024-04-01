@@ -6,7 +6,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(EXPORT_DIR "${CMAKE_SOURCE_DIR}/build/cmake")
 
 include(static_analyzers)
-include(enable_vcpkg)
+include(CPM)
 include(remote_clone)
 include(enable_tests)
 include(GNUInstallDirs)
@@ -19,12 +19,11 @@ if (ENABLE_TESTING)
     enable_tests()
 endif()
 
-enable_vcpkg()
-
 set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
 # set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
 
-find_package(liberror CONFIG REQUIRED)
-set(LibPreprocessor_ExternalLibraries LibError::LibError)
+CPMAddPackage("gh:nyyakko/LibError#91e6e94")
+
+set(LibPreprocessor_ExternalLibraries LibError)
 
 add_subdirectory(libpreprocessor)
