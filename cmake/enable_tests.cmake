@@ -13,6 +13,14 @@ function(enable_tests)
 
     include(GoogleTest)
 
+    CPMAddPackage(
+        NAME googletest
+        GITHUB_REPOSITORY google/googletest
+        GIT_TAG release-1.12.1
+        VERSION 1.12.1
+        OPTIONS "INSTALL_GTEST OFF" "gtest_force_shared_crt"
+    )
+
     enable_testing()
     add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
 

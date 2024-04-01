@@ -18,11 +18,11 @@ if (ENABLE_TESTING)
     enable_tests()
 endif()
 
-set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
 # set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
+set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
 
-CPMAddPackage("gh:nyyakko/LibError#b20f27d")
+CPMAddPackage("gh:nyyakko/LibError#b5e286e")
 
-set(LibPreprocessor_ExternalLibraries LibError)
+set(LibPreprocessor_ExternalLibraries LibError::LibError)
 
 add_subdirectory(libpreprocessor)
