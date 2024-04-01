@@ -84,17 +84,28 @@ using namespace liberror;
 
     ErrorOr<void> tokenize_literal(Lexer& lexer, std::vector<Token>& tokens)
     {
+        std::function<std::string()> fnBuildLiteral {};
+
+        fnBuildLiteral = [&] () -> std::string {
+            std::string value {};
+
+            while (!lexer.eof() && lexer.peek() != '>')
+            {
+                if (lexer.peek() == '<')
+                {
+                    value += lexer.take();
+                    value += fnBuildLiteral();
+                }
+
+                value += lexer.take();
+            }
+
+            return value;
+        };
+
         Token token {};
 
-        while (!lexer.eof())
-        {
-            token.data += lexer.take();
-            if (lexer.peek() == '>' && (TRY(lexer.peek_next()) == ']' || TRY(lexer.peek_next()) == ' '))
-            {
-                break;
-            }
-        }
-
+        token.data  = fnBuildLiteral();
         token.begin = lexer.cursor() - token.data.size();
         token.end   = lexer.cursor();
         token.type  = [&] {
