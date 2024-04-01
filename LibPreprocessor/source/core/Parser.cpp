@@ -10,7 +10,6 @@
 #include "core/nodes/PrintNode.hpp"
 #include "core/nodes/SelectionMatchStatementNode.hpp"
 #include "core/nodes/SelectionStatementNode.hpp"
-#include "core/nodes/UnconditionalStatementNode.hpp"
 
 #include <algorithm>
 #include <list>

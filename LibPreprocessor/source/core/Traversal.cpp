@@ -8,10 +8,8 @@
 #include "core/nodes/LiteralNode.hpp"
 #include "core/nodes/OperatorNode.hpp"
 #include "core/nodes/PrintNode.hpp"
-#include "core/nodes/BodyNode.hpp"
 #include "core/nodes/SelectionMatchStatementNode.hpp"
 #include "core/nodes/SelectionStatementNode.hpp"
-#include "core/nodes/UnconditionalStatementNode.hpp"
 
 #include <functional>
 #include <algorithm>
@@ -248,11 +246,6 @@ using namespace liberror;
                     TRY(traverse(node->branch.second, stream, context));
                 }
 
-                break;
-            }
-            case IStatementNode::Type::UNCONDITIONAL: {
-                auto const* node = static_cast<UnconditionalStatementNode*>(statement);
-                TRY(traverse(node->branch, stream, context));
                 break;
             }
             case IStatementNode::Type::MATCH: {
