@@ -2,7 +2,7 @@
 
 # installation
 
-you may copy the files under LibPreprocessor/include into your project, install it with [vcpkg](https://github.com/echites/vcpkg-registry) or install directly into your system with the following: 
+you may copy the files under LibPreprocessor/include into your project, install it with [CPM](https://github.com/cpm-cmake/CPM.cmake) or install directly into your system with the following: 
 
 * ``py install.py``
 
@@ -30,9 +30,9 @@ int main()
 {
     using namespace std::literals;
 
+#if 1
     libpreprocessor::PreprocessorContext context {};
 
-#if 1
     auto static constexpr source =
         "%IF [NOT <FALSE>]:\n"
         "    %PRINT [<hello!>]\n"
@@ -70,8 +70,6 @@ int main()
 int main()
 {
     using namespace std::literals;
-
-    libpreprocessor::PreprocessorContext context {};
 
     std::print("Do you like potatoes? [yes/no] ");
     std::string name {};

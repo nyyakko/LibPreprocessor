@@ -12,7 +12,6 @@ function(enable_tests)
     set(LibPreprocessor_TestsCompilerOptions ${LibPreprocessor_TestsCompilerOptions} ${LibPreprocessor_CompilerOptions})
 
     include(GoogleTest)
-    find_package(GTest CONFIG REQUIRED)
 
     enable_testing()
     add_subdirectory(${PROJECT_SOURCE_DIR}/tests)

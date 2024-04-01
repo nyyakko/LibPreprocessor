@@ -21,7 +21,7 @@ endif()
 set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
 # set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
 
-CPMAddPackage("gh:nyyakko/LibError#91e6e94")
+CPMAddPackage("gh:nyyakko/LibError#b20f27d")
 
 set(LibPreprocessor_ExternalLibraries LibError)
 
