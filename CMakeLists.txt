@@ -25,4 +25,4 @@ CPMAddPackage("gh:nyyakko/LibError#2a20f45")
 
 set(LibPreprocessor_ExternalLibraries LibError::LibError)
 
-add_subdirectory(libpreprocessor)
+add_subdirectory(LibPreprocessor)
