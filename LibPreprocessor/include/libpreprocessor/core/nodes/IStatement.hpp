@@ -16,7 +16,6 @@ struct IStatementNode : INode
     {
         START__,
         CONDITIONAL,
-        UNCONDITIONAL,
         MATCH,
         MATCH_CASE,
         PRINT,
