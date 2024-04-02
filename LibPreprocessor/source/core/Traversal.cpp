@@ -103,6 +103,8 @@ using namespace liberror;
 
         ErrorOr<std::string> evaluate_expression(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
         {
+            using namespace std::literals;
+
             if (!head) { return make_error(PREFIX_ERROR": Head node was nullptr."); }
 
             if (head->type() != INode::Type::EXPRESSION)
@@ -142,7 +144,7 @@ using namespace liberror;
                         return TRY(interpolate_string(value, context));
                     }());
 
-                    if (operatorNode->name == "NOT") return TRY(decay_to_boolean_literal(lhs)) ? "FALSE" : "TRUE";
+                    if (operatorNode->name == "NOT") return TRY(decay_to_boolean_literal(lhs)) ? "FALSE"s : "TRUE"s;
 
                     break;
                 }
@@ -164,10 +166,17 @@ using namespace liberror;
                         return TRY(interpolate_string(value, context));
                     }());
 
-                    if (operatorNode->name == "CONTAINS") return std::ranges::contains_subrange(lhs, rhs) ? "TRUE" : "FALSE";
-                    if (operatorNode->name == "EQUALS") return lhs == rhs ? "TRUE" : "FALSE";
-                    if (operatorNode->name == "AND") return lhs == "TRUE" && rhs == "TRUE" ? "TRUE" : "FALSE";
-                    if (operatorNode->name == "OR") return lhs == "TRUE" || rhs == "TRUE" ? "TRUE" : "FALSE";
+                    if (operatorNode->name == "CONTAINS")
+                        return std::ranges::contains_subrange(lhs, rhs) ? "TRUE"s : "FALSE"s;
+
+                    if (operatorNode->name == "EQUALS")
+                        return lhs == rhs ? "TRUE"s : "FALSE"s;
+
+                    if (operatorNode->name == "AND")
+                        return lhs == "TRUE" && rhs == "TRUE" ? "TRUE"s : "FALSE"s;
+
+                    if (operatorNode->name == "OR")
+                        return lhs == "TRUE" || rhs == "TRUE" ? "TRUE"s : "FALSE"s;
 
                     break;
                 }
@@ -200,7 +209,7 @@ using namespace liberror;
             }
             }
 
-            return "FALSE";
+            return "FALSE"s;
         }
 
         }
