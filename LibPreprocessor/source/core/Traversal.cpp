@@ -221,22 +221,28 @@ using namespace liberror;
         switch (head->type())
         {
         case INode::Type::STATEMENT: {
-            auto const* statement = static_cast<IStatementNode*>(head.get());
+            auto const* statementNode = static_cast<IStatementNode*>(head.get());
 
-            switch (statement->statement_type())
+            switch (statementNode->statement_type())
             {
             case IStatementNode::Type::CONDITIONAL: {
-                auto const* node = static_cast<ConditionalStatementNode const*>(statement);
+                auto const* node = static_cast<ConditionalStatementNode const*>(statementNode);
+
+                if (node->condition->type() != INode::Type::EXPRESSION)
+                {
+                    return make_error(PREFIX_ERROR": %IF statement expects an \"INode::Type::EXPRESSION\", but instead got \"{}\".", node->condition->type_as_string());
+                }
+
                 if (TRY(evaluate_expression(node->condition, context)) == "TRUE") TRY(traverse(node->branch.first, stream, context));
                 else if (node->branch.second) TRY(traverse(node->branch.second, stream, context));
                 break;
             }
             case IStatementNode::Type::MATCH: {
-                auto const* node = static_cast<SelectionStatementNode const*>(statement);
+                auto const* node = static_cast<SelectionStatementNode const*>(statementNode);
 
                 if (node->match->type() != INode::Type::EXPRESSION)
                 {
-                    return make_error(PREFIX_ERROR": %SWITCH statement expects an \"INode::Type::EXPRESSION\" as match, but instead got \"{}\".", node->match->type_as_string());
+                    return make_error(PREFIX_ERROR": %SWITCH statement expects an \"INode::Type::EXPRESSION\", but instead got \"{}\".", node->match->type_as_string());
                 }
 
                 auto const match = TRY(evaluate_expression(node->match, context));
@@ -244,9 +250,19 @@ using namespace liberror;
 
                 for (auto const& subnode : node->branches.first->nodes)
                 {
-                    auto const* selectionMatchStatementNode = static_cast<SelectionMatchStatementNode*>(subnode.get());
+                    auto const* innerNode = static_cast<SelectionMatchStatementNode*>(subnode.get());
 
-                    if (unquoted(static_cast<LiteralNode*>(selectionMatchStatementNode->match.get())->value) == match)
+                    if (innerNode == nullptr)
+                    {
+                        return make_error(PREFIX_ERROR": %CASE statement was nulllptr.");
+                    }
+
+                    if (innerNode->match->type() != INode::Type::LITERAL)
+                    {
+                        return make_error(PREFIX_ERROR": %CASE statement expects an \"INode::Type::LITERAL\", but instead got \"{}\".", innerNode->match->type_as_string());
+                    }
+
+                    if (unquoted(static_cast<LiteralNode*>(innerNode->match.get())->value) == match)
                     {
                         TRY(traverse(subnode, stream, context));
                         hasHandledNormalCase = true;
@@ -262,12 +278,12 @@ using namespace liberror;
                 break;
             }
             case IStatementNode::Type::MATCH_CASE: {
-                auto const* selectionMatchStatementNode = static_cast<SelectionMatchStatementNode*>(head.get());
-                TRY(traverse(selectionMatchStatementNode->branch, stream, context));
+                auto const* node = static_cast<SelectionMatchStatementNode*>(head.get());
+                TRY(traverse(node->branch, stream, context));
                 break;
             }
             case IStatementNode::Type::PRINT: {
-                auto const* node = static_cast<PrintStatementNode const*>(statement);
+                auto const* node = static_cast<PrintStatementNode const*>(statementNode);
 
                 if (node->content->type() != INode::Type::EXPRESSION)
                 {
@@ -282,7 +298,7 @@ using namespace liberror;
             case IStatementNode::Type::START__:
             case IStatementNode::Type::END__:
             default: {
-                return make_error(PREFIX_ERROR": Unexpected statement \"{}\" reached.", statement->type_as_string());
+                return make_error(PREFIX_ERROR": Unexpected statement \"{}\" reached.", statementNode->type_as_string());
             }
             }
 

@@ -23,8 +23,8 @@ struct IStatementNode : INode
     };
 
     virtual ~IStatementNode() = default;
-    virtual Type statement_type() const = 0;
-    virtual char const* statement_type_as_string() const = 0;
+    virtual constexpr Type statement_type() const = 0;
+    virtual constexpr char const* statement_type_as_string() const = 0;
 
 private:
     using INode::nodes;
