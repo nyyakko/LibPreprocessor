@@ -1,5 +1,5 @@
 add_subdirectory(source)
-add_subdirectory(include/${PROJECT_NAME})
+add_subdirectory(include/libpreprocessor)
 
 add_library(${PROJECT_NAME} STATIC ${LibPreprocessor_SourceFiles})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
