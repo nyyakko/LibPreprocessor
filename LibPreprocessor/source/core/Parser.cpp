@@ -31,7 +31,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
         case Token::Type::PERCENT: {
             if (!is_keyword(peek()))
             {
-                return make_error("Expecting a node of type \"Token::Type::KEYWORD\" after \"%\", but instead got \"{}\".", token.type_as_string());
+                return make_error(PREFIX_ERROR": Expecting a node of type \"Token::Type::KEYWORD\" after \"%\", but instead got \"{}\".", token.type_as_string());
             }
 
             if (peek().data == "END") { tokens().push(token); return root; }
@@ -52,7 +52,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 
                 if (eof() || peek().data != "END")
                 {
-                    return make_error("An \"%IF\" statement missing its \"%END\" was reached.");
+                    return make_error(PREFIX_ERROR": An \"%IF\" statement missing its \"%END\" was reached.");
                 }
 
                 take();
@@ -74,7 +74,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 
                 if (eof() || peek().data != "END")
                 {
-                    return make_error("An \"%SWITCH\" statement missing its \"%END\" was reached.");
+                    return make_error(PREFIX_ERROR": An \"%SWITCH\" statement missing its \"%END\" was reached.");
                 }
 
                 take();
@@ -94,7 +94,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 
                 if (eof() || peek().data != "END")
                 {
-                    return make_error("An \"%CASE\" statement missing its \"%END\" was reached.");
+                    return make_error(PREFIX_ERROR": An \"%CASE\" statement missing its \"%END\" was reached.");
                 }
 
                 take();
@@ -115,7 +115,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 
                 if (eof() || peek().data != "END")
                 {
-                    return make_error("An \"%DEFAULT\" statement missing its \"%END\" was reached.");
+                    return make_error(PREFIX_ERROR": An \"%DEFAULT\" statement missing its \"%END\" was reached.");
                 }
 
                 take();
@@ -130,7 +130,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
             }
             else
             {
-                return make_error("Unexpected keyword \"{}\" was reached.", innerToken.data);
+                return make_error(PREFIX_ERROR": Unexpected keyword \"{}\" was reached.", innerToken.data);
             }
 
             if (root == nullptr)
@@ -146,7 +146,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 
             if (eof() || !is_right_square_bracket(peek()))
             {
-                return make_error("\"[\" missing its \"]\"");
+                return make_error(PREFIX_ERROR": \"[\" missing its \"]\"");
             }
 
             root = std::move(expressionNode);
@@ -212,7 +212,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
         case Token::Type::BEGIN__:
         case Token::Type::END__:
         default: {
-            return make_error("Unexpected token of kind \"{}\" was reached.", token.type_as_string());
+            return make_error(PREFIX_ERROR": Unexpected token of kind \"{}\" was reached.", token.type_as_string());
         }
         }
     }

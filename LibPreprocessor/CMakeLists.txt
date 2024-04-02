@@ -4,6 +4,13 @@ add_subdirectory(include/${PROJECT_NAME})
 add_library(${PROJECT_NAME} STATIC ${LibPreprocessor_SourceFiles})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
+target_compile_definitions(
+    ${PROJECT_NAME} PRIVATE
+        PREFIX_ERROR="[${PROJECT_NAME}::Runtime/error]"
+        PREFIX_WARN="[${PROJECT_NAME}::Runtime/warn]"
+        PREFIX_INFO="[${PROJECT_NAME}::Runtime/info]"
+)
+
 if (ENABLE_CLANGTIDY)
     enable_clang_tidy()
 endif()
@@ -18,7 +25,6 @@ target_include_directories(${PROJECT_NAME}
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )
-
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_23)
 

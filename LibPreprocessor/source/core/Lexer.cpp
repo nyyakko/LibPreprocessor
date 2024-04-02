@@ -9,8 +9,8 @@ using namespace liberror;
 
     namespace {
 
-    static bool is_newline(char value) { return value == '\n'; }
-    static bool is_space(char value) { return value == ' '; }
+    bool is_newline(char value) { return value == '\n'; }
+    bool is_space(char value) { return value == ' '; }
 
     void drop_while(Lexer& lexer, std::function<bool(char)> const& predicate)
     {
@@ -35,7 +35,7 @@ using namespace liberror;
 
         if (lexer.peek() != expected)
         {
-            return make_error("Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(lexer.peek()));
+            return make_error(PREFIX_ERROR": Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(lexer.peek()));
         }
 
         return {};
@@ -243,7 +243,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
 
             take();
 
-            auto const spaces = [&] {
+            auto const spacesCount = [&] {
                 auto count = 0zu;
                 while (std::isspace(peek())) { count += 1; take(); }
                 return count;
@@ -251,13 +251,13 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
 
             if (peek() != '%')
             {
-                for ([[maybe_unused]]auto _ : std::views::iota(0zu, spaces)) TRY(untake());
+                for ([[maybe_unused]]auto _ : std::views::iota(0zu, spacesCount)) TRY(untake());
             }
 
             break;
         }
         case ' ': {
-            auto const spaces = [&] {
+            auto const spacesCount = [&] {
                 auto count = 0zu;
                 while (peek() != '<' && !std::isalpha(peek())) { count += 1; take(); }
                 return count;
@@ -271,7 +271,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             }
             else
             {
-                for ([[maybe_unused]]auto _ : std::views::iota(0zu, spaces)) TRY(untake());
+                for ([[maybe_unused]]auto _ : std::views::iota(0zu, spacesCount)) TRY(untake());
                 tokenize_content(*this, tokens);
             }
 

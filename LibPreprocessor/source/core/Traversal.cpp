@@ -23,51 +23,37 @@ using namespace liberror;
 
         namespace {
 
-        std::string unquoted(std::string const& string) { return string.starts_with("\"") ? string.substr(1, string.size() - 2) : string; }
+        std::string unquoted(std::string const& string)
+        {
+            return string.starts_with("\"") && string.ends_with("\"")
+                        ? string.substr(1, string.size() - 2)
+                        : string;
+        }
 
         ErrorOr<size_t> decay_to_integer_literal(std::string_view literal)
         {
-            if (literal.empty())
-            {
-                return make_error("Cannot decay an empty literal.");
-            }
-
+            if (literal.empty()) return make_error(PREFIX_ERROR": Cannot decay an empty literal.");
             std::stringstream stream {};
             stream << literal;
             size_t value {};
             stream >> value;
-
-            if (stream.fail())
-            {
-                return make_error("Couldn't decay literal \"{}\" to a integer.", literal);
-            }
-
+            if (stream.fail()) return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a integer.", literal);
             return value;
         }
 
         ErrorOr<bool> decay_to_boolean_literal(std::string_view literal)
         {
-            if (literal.empty())
-            {
-                return make_error("Cannot decay an empty literal.");
-            }
-
+            if (literal.empty()) return make_error(PREFIX_ERROR": Cannot decay an empty literal.");
             if (literal == "TRUE") return true;
             if (literal == "FALSE") return false;
-
             auto const result = decay_to_integer_literal(literal);
-
-            if (result.has_error())
-            {
-                return make_error("Couldn't decay literal \"{}\" to a boolean.", literal);
-            }
-
+            if (result.has_error()) return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a boolean.", literal);
             return result;
         }
 
         ErrorOr<std::string> interpolate_string(std::string_view string, PreprocessorContext const& context)
         {
-            if (string.empty()) return make_error("Tried to interpolate an empty string.");
+            if (string.empty()) return make_error(PREFIX_ERROR": Tried to interpolate an empty string.");
 
             std::string result {};
 
@@ -117,11 +103,11 @@ using namespace liberror;
 
         ErrorOr<std::string> evaluate_expression(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
         {
-            if (!head) { return make_error("Head node was nullptr."); }
+            if (!head) { return make_error(PREFIX_ERROR": Head node was nullptr."); }
 
             if (head->type() != INode::Type::EXPRESSION)
             {
-                return make_error("Head node is expected to be of type \"INode::Type::EXPRESSION\", instead it was \"{}\".", head->type_as_string());
+                return make_error(PREFIX_ERROR": Head node is expected to be of type \"INode::Type::EXPRESSION\", instead it was \"{}\".", head->type_as_string());
             }
 
             auto* headExpression = static_cast<ExpressionNode*>(head.get());
@@ -131,10 +117,7 @@ using namespace liberror;
             case INode::Type::OPERATOR: {
                 auto* operatorNode = static_cast<OperatorNode*>(headExpression->value.get());
 
-                if (!operatorNode->lhs)
-                {
-                    return make_error("For any operator, it must have atleast one value for it to work on.");
-                }
+                if (!operatorNode->lhs) return make_error(PREFIX_ERROR": For any operator, it must have atleast one value for it to work on.");
 
                 if (operatorNode->lhs->type() == INode::Type::EXPRESSION)
                 {
@@ -154,21 +137,19 @@ using namespace liberror;
                 {
                 case OperatorNode::Arity::UNARY: {
                     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
-                        auto value = unquoted(static_cast<LiteralNode*>(operatorNode->lhs.get())->value);
+                        auto value = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
+                        if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
                         return TRY(interpolate_string(value, context));
                     }());
 
-                    if (operatorNode->name == "NOT")
-                    {
-                        return TRY(decay_to_boolean_literal(lhs)) ? "FALSE" : "TRUE";
-                    }
+                    if (operatorNode->name == "NOT") return TRY(decay_to_boolean_literal(lhs)) ? "FALSE" : "TRUE";
 
                     break;
                 }
                 case OperatorNode::Arity::BINARY: {
                     if (!operatorNode->rhs)
                     {
-                        return make_error("Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
+                        return make_error(PREFIX_ERROR": Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
                     }
 
                     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
@@ -183,10 +164,10 @@ using namespace liberror;
                         return TRY(interpolate_string(value, context));
                     }());
 
-                    if (operatorNode->name == "CONTAINS") { return std::ranges::contains_subrange(lhs, rhs) ? "TRUE" : "FALSE"; }
-                    if (operatorNode->name == "EQUALS") { return lhs == rhs ? "TRUE" : "FALSE"; }
-                    if (operatorNode->name == "AND") { return lhs == "TRUE" && rhs == "TRUE" ? "TRUE" : "FALSE"; }
-                    if (operatorNode->name == "OR") { return lhs == "TRUE" || rhs == "TRUE" ? "TRUE" : "FALSE"; }
+                    if (operatorNode->name == "CONTAINS") return std::ranges::contains_subrange(lhs, rhs) ? "TRUE" : "FALSE";
+                    if (operatorNode->name == "EQUALS") return lhs == rhs ? "TRUE" : "FALSE";
+                    if (operatorNode->name == "AND") return lhs == "TRUE" && rhs == "TRUE" ? "TRUE" : "FALSE";
+                    if (operatorNode->name == "OR") return lhs == "TRUE" || rhs == "TRUE" ? "TRUE" : "FALSE";
 
                     break;
                 }
@@ -194,7 +175,7 @@ using namespace liberror;
                 case OperatorNode::Arity::BEGIN__:
                 case OperatorNode::Arity::END__:
                 default: {
-                    return make_error("Operator \"{}\" had an invalid arity.", operatorNode->name);
+                    return make_error(PREFIX_ERROR": Operator \"{}\" had an invalid arity.", operatorNode->name);
                 }
                 }
                 break;
@@ -202,15 +183,9 @@ using namespace liberror;
             case INode::Type::LITERAL: {
                 auto const* literalNode = static_cast<LiteralNode*>(headExpression->value.get());
                 auto const value        = literalNode->value;
-
-                if (value.starts_with("\"") && value.ends_with("\""))
-                {
-                    return unquoted(value);
-                }
-
+                if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
                 if (context.localVariables.contains(value)) return context.localVariables.at(value);
                 if (context.environmentVariables.contains(value)) return context.environmentVariables.at(value);
-
                 return interpolate_string(value, context);
             }
 
@@ -221,7 +196,7 @@ using namespace liberror;
             case INode::Type::CONDITION:
             case INode::Type::BODY:
             case INode::Type::END__: {
-                return make_error("Unexpected node of type \"{}\" was reached.", headExpression->type_as_string());
+                return make_error(PREFIX_ERROR": Unexpected node of type \"{}\" was reached.", headExpression->type_as_string());
             }
             }
 
@@ -232,47 +207,39 @@ using namespace liberror;
 
     static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
     {
-        if (!head) { return make_error("Head node was nullptr."); }
+        if (!head) return make_error(PREFIX_ERROR": Head node was nullptr.");
 
         switch (head->type())
         {
         case INode::Type::STATEMENT: {
-            auto* statement = static_cast<IStatementNode*>(head.get());
+            auto const* statement = static_cast<IStatementNode*>(head.get());
 
             switch (statement->statement_type())
             {
             case IStatementNode::Type::CONDITIONAL: {
-                auto const* node = static_cast<ConditionalStatementNode*>(statement);
-
-                if (TRY(evaluate_expression(node->condition, context)) == "TRUE")
-                {
-                    TRY(traverse(node->branch.first, stream, context));
-                }
-                else if (node->branch.second)
-                {
-                    TRY(traverse(node->branch.second, stream, context));
-                }
-
+                auto const* node = static_cast<ConditionalStatementNode const*>(statement);
+                if (TRY(evaluate_expression(node->condition, context)) == "TRUE") TRY(traverse(node->branch.first, stream, context));
+                else if (node->branch.second) TRY(traverse(node->branch.second, stream, context));
                 break;
             }
             case IStatementNode::Type::MATCH: {
-                auto* node = static_cast<SelectionStatementNode*>(statement);
+                auto const* node = static_cast<SelectionStatementNode const*>(statement);
 
                 if (node->match->type() != INode::Type::EXPRESSION)
                 {
-                    return make_error("%SWITCH statement expects an \"INode::Type::EXPRESSION\" as match, but instead got \"{}\".", node->match->type_as_string());
+                    return make_error(PREFIX_ERROR": %SWITCH statement expects an \"INode::Type::EXPRESSION\" as match, but instead got \"{}\".", node->match->type_as_string());
                 }
 
-                auto match = TRY(evaluate_expression(node->match, context));
+                auto const match = TRY(evaluate_expression(node->match, context));
                 bool hasHandledNormalCase = false;
 
                 for (auto const& subnode : node->branches.first->nodes)
                 {
-                    auto* selectionMatchStatementNode = static_cast<SelectionMatchStatementNode*>(subnode.get());
+                    auto const* selectionMatchStatementNode = static_cast<SelectionMatchStatementNode*>(subnode.get());
 
                     if (unquoted(static_cast<LiteralNode*>(selectionMatchStatementNode->match.get())->value) == match)
                     {
-                        TRY(traverse(selectionMatchStatementNode->branch, stream, context));
+                        TRY(traverse(subnode, stream, context));
                         hasHandledNormalCase = true;
                         break;
                     }
@@ -285,12 +252,17 @@ using namespace liberror;
 
                 break;
             }
+            case IStatementNode::Type::MATCH_CASE: {
+                auto const* selectionMatchStatementNode = static_cast<SelectionMatchStatementNode*>(head.get());
+                TRY(traverse(selectionMatchStatementNode->branch, stream, context));
+                break;
+            }
             case IStatementNode::Type::PRINT: {
-                auto* node = static_cast<PrintStatementNode*>(statement);
+                auto const* node = static_cast<PrintStatementNode const*>(statement);
 
                 if (node->content->type() != INode::Type::EXPRESSION)
                 {
-                    return make_error("%PRINT statement expects an \"INode::Type::EXPRESSION\" as argument, but instead got \"{}\".", node->content->type_as_string());
+                    return make_error(PREFIX_ERROR": %PRINT statement expects an \"INode::Type::EXPRESSION\" as argument, but instead got \"{}\".", node->content->type_as_string());
                 }
 
                 std::println("{}", TRY(evaluate_expression(node->content, context)));
@@ -298,19 +270,17 @@ using namespace liberror;
                 break;
             }
 
-            case IStatementNode::Type::MATCH_CASE:
-
             case IStatementNode::Type::START__:
             case IStatementNode::Type::END__:
             default: {
-                return make_error("Unexpected statement \"{}\" reached.", statement->type_as_string());
+                return make_error(PREFIX_ERROR": Unexpected statement \"{}\" reached.", statement->type_as_string());
             }
             }
 
             break;
         }
         case INode::Type::CONTENT: {
-            ContentNode* node = static_cast<ContentNode*>(head.get());
+            auto const* node = static_cast<ContentNode*>(head.get());
             stream << node->content;
 
             if (!((node->content.front() == node->content.back()) && node->content.front() == '\n'))
@@ -332,7 +302,7 @@ using namespace liberror;
         case INode::Type::START__:
         case INode::Type::END__:
         default: {
-            return make_error("Unexpected node of type \"{}\" was reached.", head->type_as_string());
+            return make_error(PREFIX_ERROR": Unexpected node of type \"{}\" was reached.", head->type_as_string());
         }
         }
 
