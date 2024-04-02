@@ -172,12 +172,14 @@ using namespace liberror;
                     }
 
                     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
-                        auto value = unquoted(static_cast<LiteralNode*>(operatorNode->lhs.get())->value);
+                        auto value = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
+                        if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
                         return TRY(interpolate_string(value, context));
                     }());
 
                     auto const rhs = TRY([&] -> liberror::ErrorOr<std::string> {
-                        auto value = unquoted(static_cast<LiteralNode*>(operatorNode->rhs.get())->value);
+                        auto value = static_cast<LiteralNode*>(operatorNode->rhs.get())->value;
+                        if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
                         return TRY(interpolate_string(value, context));
                     }());
 
@@ -198,13 +200,18 @@ using namespace liberror;
                 break;
             }
             case INode::Type::LITERAL: {
-                auto const* literalNode  = static_cast<LiteralNode*>(headExpression->value.get());
-                auto const unquotedValue = unquoted(literalNode->value);
+                auto const* literalNode = static_cast<LiteralNode*>(headExpression->value.get());
+                auto const value        = literalNode->value;
 
-                if (context.localVariables.contains(unquotedValue)) return context.localVariables.at(unquotedValue);
-                if (context.environmentVariables.contains(unquotedValue)) return context.environmentVariables.at(unquotedValue);
+                if (value.starts_with("\"") && value.ends_with("\""))
+                {
+                    return unquoted(value);
+                }
 
-                return interpolate_string(unquotedValue, context);
+                if (context.localVariables.contains(value)) return context.localVariables.at(value);
+                if (context.environmentVariables.contains(value)) return context.environmentVariables.at(value);
+
+                return interpolate_string(value, context);
             }
 
             case INode::Type::START__:
