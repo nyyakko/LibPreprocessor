@@ -141,7 +141,7 @@ using namespace liberror;
                     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
                         auto value = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
                         if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
-                        return TRY(interpolate_string(value, context));
+                        return interpolate_string(value, context);
                     }());
 
                     if (operatorNode->name == "NOT") return TRY(decay_to_boolean_literal(lhs)) ? "FALSE"s : "TRUE"s;
@@ -157,13 +157,13 @@ using namespace liberror;
                     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
                         auto value = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
                         if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
-                        return TRY(interpolate_string(value, context));
+                        return interpolate_string(value, context);
                     }());
 
                     auto const rhs = TRY([&] -> liberror::ErrorOr<std::string> {
                         auto value = static_cast<LiteralNode*>(operatorNode->rhs.get())->value;
                         if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
-                        return TRY(interpolate_string(value, context));
+                        return interpolate_string(value, context);
                     }());
 
                     if (operatorNode->name == "CONTAINS")

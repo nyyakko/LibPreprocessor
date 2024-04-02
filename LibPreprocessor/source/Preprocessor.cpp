@@ -14,8 +14,7 @@ ErrorOr<std::string> preprocess(std::string_view source, PreprocessorContext con
 {
     Lexer lexer { source };
     Parser parser { TRY(lexer.tokenize()) };
-    auto const ast = TRY(parser.parse());
-    return TRY(traverse(ast, context));
+    return traverse(TRY(parser.parse()), context);
 }
 
 ErrorOr<std::string> preprocess(std::filesystem::path path, PreprocessorContext const& context)
@@ -23,8 +22,7 @@ ErrorOr<std::string> preprocess(std::filesystem::path path, PreprocessorContext 
     std::ifstream inputStream { path };
     std::stringstream contentStream {};
     contentStream << inputStream.rdbuf();
-
-    return TRY(preprocess(std::string_view(contentStream.str()), context));
+    return preprocess(std::string_view(contentStream.str()), context);
 }
 
 }

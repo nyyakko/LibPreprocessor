@@ -61,7 +61,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
             }
             else if (innerToken.data == "ELSE")
             {
-                return TRY(parse(parent, child + 1));
+                return parse(parent, child + 1);
             }
             else if (innerToken.data == "SWITCH")
             {
