@@ -48,7 +48,7 @@ using namespace liberror;
             if (literal == "FALSE") return false;
             auto const result = decay_to_integer_literal(literal);
             if (result.has_error()) return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a boolean.", literal);
-            return result;
+            return static_cast<bool>(result.value());
         }
 
         ErrorOr<std::string> interpolate_string(std::string_view string, PreprocessorContext const& context)
