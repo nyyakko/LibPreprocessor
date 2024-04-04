@@ -20,7 +20,7 @@ using namespace liberror;
 
 ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 {
-    std::unique_ptr<INode> root = nullptr;
+    ErrorOr<std::unique_ptr<INode>> root = nullptr;
 
     while (!eof())
     {
@@ -39,7 +39,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
 
             auto const innerToken = take();
 
-            std::unique_ptr<INode> statementNode {};
+            std::unique_ptr<INode> statementNode = nullptr;
 
             if (innerToken.data == "IF")
             {
@@ -133,10 +133,10 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
                 return make_error(PREFIX_ERROR": Unexpected keyword \"{}\" was reached.", innerToken.data);
             }
 
-            if (root == nullptr)
+            if (root.value() == nullptr)
                 root = std::move(statementNode);
             else
-                root->nodes.push_back(std::move(statementNode));
+                root.value()->nodes.push_back(std::move(statementNode));
 
             break;
         }
@@ -184,7 +184,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
                 return OperatorNode::Arity{};
             }();
 
-            operatorNode->lhs = (root == nullptr) ? TRY(parse(parent, child + 1)) : std::move(root);
+            operatorNode->lhs = (root.value() == nullptr) ? TRY(parse(parent, child + 1)) : std::move(root.value());
 
             if (operatorNode->arity == OperatorNode::Arity::BINARY)
             {
@@ -198,10 +198,10 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(int64_t parent, int64_t child)
             auto contentNode     = std::make_unique<ContentNode>();
             contentNode->content = token.data;
 
-            if (root == nullptr)
+            if (root.value() == nullptr)
                 root = std::move(contentNode);
             else
-                root->nodes.push_back(std::move(contentNode));
+                root.value()->nodes.push_back(std::move(contentNode));
 
             break;
         }

@@ -55,7 +55,7 @@ using namespace liberror;
         {
             if (string.empty()) return make_error(PREFIX_ERROR": Tried to interpolate an empty string.");
 
-            std::string result {};
+            ErrorOr<std::string> result {};
 
             for (auto index = 0zu; index < string.size(); index += 1)
             {
@@ -86,17 +86,17 @@ using namespace liberror;
                         return { originalValue, value };
                     };
 
-                    result += std::format("{}", fnParseIdentifier().second);
+                    result.value() += std::format("{}", fnParseIdentifier().second);
                     index -= 1;
                 }
                 else
                 {
-                    result += string.at(index);
+                    result.value() += string.at(index);
                 }
             }
 
-            if (context.localVariables.contains(result)) return context.localVariables.at(result);
-            if (context.environmentVariables.contains(result)) return context.environmentVariables.at(result);
+            if (context.localVariables.contains(result.value())) return context.localVariables.at(result.value());
+            if (context.environmentVariables.contains(result.value())) return context.environmentVariables.at(result.value());
 
             return result;
         }

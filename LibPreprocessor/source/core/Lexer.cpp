@@ -89,7 +89,7 @@ using namespace liberror;
         fnBuildLiteral = [&] () -> std::string {
             std::string value {};
 
-            while (!lexer.eof() && lexer.peek() != '>')
+            while (!lexer.eof() && lexer.peek() != '>' && lexer.peek() != ']')
             {
                 if (lexer.peek() == '<')
                 {
@@ -192,7 +192,7 @@ using namespace liberror;
 
 ErrorOr<std::vector<Token>> Lexer::tokenize()
 {
-    std::vector<Token> tokens {};
+    ErrorOr<std::vector<Token>> tokens {};
 
     while (!eof())
     {
@@ -205,8 +205,8 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             token.data += take();
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
-            tokens.push_back(std::move(token));
-            tokenize_keyword(*this, tokens);
+            tokens.value().push_back(std::move(token));
+            tokenize_keyword(*this, tokens.value());
             break;
         }
         case '[': {
@@ -216,8 +216,8 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             token.data += take();
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
-            tokens.push_back(std::move(token));
-            TRY(tokenize_expression(*this, tokens));
+            tokens.value().push_back(std::move(token));
+            TRY(tokenize_expression(*this, tokens.value()));
             MUST(expect_to_peek(*this, ']'));
             break;
         }
@@ -228,7 +228,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             token.data += take();
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
-            tokens.push_back(std::move(token));
+            tokens.value().push_back(std::move(token));
             drop_while(*this, is_newline);
             break;
         }
@@ -239,7 +239,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             token.data += take();
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
-            tokens.push_back(std::move(token));
+            tokens.value().push_back(std::move(token));
 
             take();
 
@@ -272,13 +272,13 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             else
             {
                 for ([[maybe_unused]]auto _ : std::views::iota(0zu, spacesCount)) TRY(untake());
-                tokenize_content(*this, tokens);
+                tokenize_content(*this, tokens.value());
             }
 
             break;
         }
         default: {
-            tokenize_content(*this, tokens);
+            tokenize_content(*this, tokens.value());
             break;
         }
         }
