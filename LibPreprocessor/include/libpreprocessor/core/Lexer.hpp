@@ -17,10 +17,10 @@ public:
 
     liberror::ErrorOr<std::vector<Token>> tokenize();
 
-    char take() { return source_m.at(cursor_m++); }
+    liberror::ErrorOr<char> take() { LIB_PREPROCESSOR_EOF(); return source_m.at(cursor_m++); }
     liberror::ErrorOr<char> untake() { LIB_PREPROCESSOR_SOF(); return source_m.at(cursor_m--); }
     liberror::ErrorOr<char> take_next() { LIB_PREPROCESSOR_EOF(); return source_m.at(cursor_m += 2); }
-    char peek() { return source_m.at(cursor_m); }
+    liberror::ErrorOr<char> peek() { LIB_PREPROCESSOR_EOF(); return source_m.at(cursor_m); }
     liberror::ErrorOr<char> peek_next() { LIB_PREPROCESSOR_EOF(); return source_m.at(cursor_m + 1); }
     bool eof() const { return cursor_m >= source_m.size(); }
     bool sof() const { return cursor_m == 0; }

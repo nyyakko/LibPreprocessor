@@ -11,13 +11,20 @@ using namespace liberror;
 
     bool is_newline(char value) { return value == '\n'; }
     bool is_space(char value) { return value == ' '; }
+    bool is_percent(char value) { return value == '%'; }
+    bool is_left_angle_bracket(char value) { return value == '<'; }
+    bool is_right_angle_bracket(char value) { return value == '>'; }
+    bool is_right_square_bracket(char value) { return value == ']'; }
+    bool is_colon(char value) { return value == ':'; }
 
-    void drop_while(Lexer& lexer, std::function<bool(char)> const& predicate)
+    ErrorOr<void> drop_while(Lexer& lexer, std::function<bool(char)> const& predicate)
     {
-        while (!lexer.eof() && predicate(lexer.peek()))
+        while (!lexer.eof() && predicate(TRY(lexer.peek())))
         {
-            lexer.take();
+            TRY(lexer.take());
         }
+
+        return {};
     }
 
     ErrorOr<void> expect_to_peek(Lexer& lexer, char expected)
@@ -35,104 +42,97 @@ using namespace liberror;
 
         if (lexer.eof())
             return make_error(PREFIX_ERROR": Expected \"{}\", but found \"EOF\" instead.", expected);
-        if (lexer.peek() != expected)
-            return make_error(PREFIX_ERROR": Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(lexer.peek()));
+        if (TRY(lexer.peek()) != expected)
+            return make_error(PREFIX_ERROR": Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(TRY(lexer.peek())));
 
         return {};
     }
 
-    void tokenize_content(Lexer& lexer, std::vector<Token>& tokens)
+    ErrorOr<Token> tokenize_content(Lexer& lexer)
     {
-        while (!lexer.eof() && lexer.peek() != '%')
+        ErrorOr<Token> token {};
+
+        do
         {
-            Token token {};
+            token.value().data += TRY(lexer.take());
+        } while (!lexer.eof() && TRY(lexer.peek()) != '%' && !(is_newline(token.value().data.front()) || is_newline(TRY(lexer.peek()))));
 
-            do
-            {
-                token.data += lexer.take();
-            } while (!lexer.eof() && lexer.peek() != '%' && !(is_newline(token.data.front()) || is_newline(lexer.peek())));
+        if (!lexer.eof() && is_newline(TRY(lexer.peek()))) { TRY(lexer.take()); }
 
-            if (is_newline(lexer.peek())) { lexer.take(); }
-            if (std::ranges::all_of(token.data, is_space)) { return; }
-
-            token.type  = Token::Type::CONTENT;
-            token.begin = lexer.cursor() - token.data.size();
-            token.end   = lexer.cursor();
-            tokens.push_back(std::move(token));
-        }
+        token.value().type  = Token::Type::CONTENT;
+        token.value().begin = lexer.cursor() - token.value().data.size();
+        token.value().end   = lexer.cursor();
+        return token;
     }
 
-    Token tokenize_keyword(Lexer& lexer)
+    ErrorOr<Token> tokenize_keyword(Lexer& lexer)
     {
-        Token token {};
+        ErrorOr<Token> token {};
 
-        while (!lexer.eof() && lexer.peek() != ':' && !(is_space(lexer.peek()) || is_newline(lexer.peek())))
+        while (!lexer.eof() && TRY(lexer.peek()) != ':' && !(is_space(TRY(lexer.peek())) || is_newline(TRY(lexer.peek()))))
         {
-            token.data += lexer.take();
+            token.value().data += TRY(lexer.take());
         }
 
-        token.type  = Token::Type::KEYWORD;
-        token.begin = lexer.cursor() - token.data.size();
-        token.end   = lexer.cursor();
+        token.value().type  = Token::Type::KEYWORD;
+        token.value().begin = lexer.cursor() - token.value().data.size();
+        token.value().end   = lexer.cursor();
 
-        if (!lexer.eof() && (is_newline(lexer.peek()) || is_space(lexer.peek())))
+        if (!lexer.eof() && (is_newline(TRY(lexer.peek())) || is_space(TRY(lexer.peek()))))
         {
-            lexer.take();
+            TRY(lexer.take());
         }
 
         return token;
     }
 
-    ErrorOr<void> tokenize_literal(Lexer& lexer, std::vector<Token>& tokens)
+    ErrorOr<std::string> build_literal(Lexer& lexer)
     {
-        std::function<std::string()> fnBuildLiteral {};
+        std::string value {};
 
-        fnBuildLiteral = [&] () -> std::string {
-            std::string value {};
-
-            while (!lexer.eof() && lexer.peek() != '>' && lexer.peek() != ']')
+        while (!lexer.eof() && !is_right_angle_bracket(TRY(lexer.peek())) && !is_right_square_bracket(TRY(lexer.peek())))
+        {
+            if (is_left_angle_bracket(TRY(lexer.peek())))
             {
-                if (lexer.peek() == '<')
-                {
-                    value += lexer.take();
-                    value += fnBuildLiteral();
-                }
-
-                value += lexer.take();
+                value += TRY(lexer.take());
+                value += TRY(build_literal(lexer));
             }
 
-            return value;
-        };
+            value += TRY(lexer.take());
+        }
 
-        Token token {};
+        return value;
+    }
 
-        token.data  = fnBuildLiteral();
-        token.begin = lexer.cursor() - token.data.size();
-        token.end   = lexer.cursor();
-        token.type  = [&] {
-            if ((token.data.starts_with("<") && token.data.ends_with(">") && token.data.contains(':')) &&
-                !(token.data.starts_with("<<") || token.data.ends_with(">>")))
+    ErrorOr<Token> tokenize_literal(Lexer& lexer)
+    {
+        ErrorOr<Token> token {};
+
+        token.value().data  = TRY(build_literal(lexer));
+        token.value().begin = lexer.cursor() - token.value().data.size();
+        token.value().end   = lexer.cursor();
+        token.value().type  = [&] {
+            if ((token.value().data.starts_with("<") && token.value().data.ends_with(">") && token.value().data.contains(':')) &&
+                !(token.value().data.starts_with("<<") || token.value().data.ends_with(">>")))
                 return Token::Type::IDENTIFIER;
             return Token::Type::LITERAL;
         }();
 
-        tokens.push_back(std::move(token));
-
-        return {};
+        return token;
     }
 
     ErrorOr<void> tokenize_expression(Lexer& lexer, std::vector<Token>& tokens, size_t depth = 0)
     {
-        while (!lexer.eof() && !(lexer.peek() == ':' || is_newline(lexer.peek())))
+        while (!lexer.eof() && !(is_colon(TRY(lexer.peek())) || is_newline(TRY(lexer.peek()))))
         {
-            drop_while(lexer, is_space);
+            TRY(drop_while(lexer, is_space));
 
-            switch (lexer.peek())
+            switch (TRY(lexer.peek()))
             {
             case '[': {
                 Token token {};
                 token.type  = Token::Type::LEFT_SQUARE_BRACKET;
-                token.data += lexer.take();
+                token.data += TRY(lexer.take());
                 token.begin = lexer.cursor() - token.data.size();
                 token.end   = lexer.cursor();
                 tokens.push_back(std::move(token));
@@ -143,7 +143,7 @@ using namespace liberror;
                 if (depth == 0) return {};
                 Token token {};
                 token.type  = Token::Type::RIGHT_SQUARE_BRACKET;
-                token.data += lexer.take();
+                token.data += TRY(lexer.take());
                 token.begin = lexer.cursor() - token.data.size();
                 token.end   = lexer.cursor();
                 tokens.push_back(std::move(token));
@@ -152,18 +152,18 @@ using namespace liberror;
             case '<': {
                 Token token {};
                 token.type  = Token::Type::LEFT_ANGLE_BRACKET;
-                token.data += lexer.take();
+                token.data += TRY(lexer.take());
                 token.begin = lexer.cursor() - token.data.size();
                 token.end   = lexer.cursor();
                 tokens.push_back(std::move(token));
-                TRY(tokenize_literal(lexer, tokens));
+                tokens.push_back(TRY(tokenize_literal(lexer)));
                 MUST(expect_to_peek(lexer, '>'));
                 break;
             }
             case '>': {
                 Token token {};
                 token.type  = Token::Type::RIGHT_ANGLE_BRACKET;
-                token.data += lexer.take();
+                token.data += TRY(lexer.take());
                 token.begin = lexer.cursor() - token.data.size();
                 token.end   = lexer.cursor();
                 tokens.push_back(std::move(token));
@@ -173,9 +173,9 @@ using namespace liberror;
                 Token token {};
                 token.type = Token::Type::IDENTIFIER;
 
-                while (!lexer.eof() && !is_space(lexer.peek()))
+                while (!lexer.eof() && !is_space(TRY(lexer.peek())))
                 {
-                    token.data += lexer.take();
+                    token.data += TRY(lexer.take());
                 }
 
                 token.begin = lexer.cursor() - token.data.size();
@@ -197,24 +197,24 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
 
     while (!eof())
     {
-        switch (peek())
+        switch (TRY(peek()))
         {
         case '%': {
-            drop_while(*this, is_space);
+            TRY(drop_while(*this, is_space));
             Token token {};
             token.type  = Token::Type::PERCENT;
-            token.data += take();
+            token.data += TRY(take());
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
             tokens.value().push_back(std::move(token));
-            tokens.value().push_back(tokenize_keyword(*this));
+            tokens.value().push_back(TRY(tokenize_keyword(*this)));
             break;
         }
         case '[': {
-            drop_while(*this, is_space);
+            TRY(drop_while(*this, is_space));
             Token token {};
             token.type  = Token::Type::LEFT_SQUARE_BRACKET;
-            token.data += take();
+            token.data += TRY(take());
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
             tokens.value().push_back(std::move(token));
@@ -223,34 +223,38 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             break;
         }
         case ']': {
-            drop_while(*this, is_space);
+            TRY(drop_while(*this, is_space));
             Token token {};
             token.type  = Token::Type::RIGHT_SQUARE_BRACKET;
-            token.data += take();
+            token.data += TRY(take());
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
             tokens.value().push_back(std::move(token));
-            drop_while(*this, is_newline);
+            TRY(drop_while(*this, is_newline));
             break;
         }
         case ':': {
-            drop_while(*this, is_space);
+            TRY(drop_while(*this, is_space));
             Token token {};
             token.type  = Token::Type::COLON;
-            token.data += take();
+            token.data += TRY(take());
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
             tokens.value().push_back(std::move(token));
 
-            take();
+            TRY(take());
 
-            auto const spacesCount = [&] {
+            auto const spacesCount = TRY([&] -> ErrorOr<size_t> {
                 auto count = 0zu;
-                while (!eof() && std::isspace(peek())) { count += 1; take(); }
+                while (!eof() && is_space(TRY(peek())))
+                {
+                    count += 1;
+                    TRY(take());
+                }
                 return count;
-            }();
+            }());
 
-            if (!eof() && peek() != '%')
+            if (!eof() && !is_percent(TRY(peek())))
             {
                 for ([[maybe_unused]]auto _ : std::views::iota(0zu, spacesCount)) TRY(untake());
             }
@@ -258,28 +262,43 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             break;
         }
         case ' ': {
-            auto const spacesCount = [&] {
+            auto const spacesCount = TRY([&] -> ErrorOr<size_t> {
                 auto count = 0zu;
-                while (!eof() && peek() != '<' && !std::isalpha(peek())) { count += 1; take(); }
+                while (!eof() && !is_left_angle_bracket(TRY(peek())) && !std::isalpha(TRY(peek())))
+                {
+                    count += 1;
+                    TRY(take());
+                }
                 return count;
-            }();
+            }());
 
-            if (!eof() && peek() == '<' && TRY(peek_next()) == '<')
+            if (!eof() && is_left_angle_bracket(TRY(peek())) && is_left_angle_bracket(TRY(peek_next())))
             {
-                take(); take();
+                TRY(take());
+                TRY(take());
                 MUST(expect_to_peek(*this, ' '));
-                take();
+                TRY(take());
             }
             else
             {
                 for ([[maybe_unused]]auto _ : std::views::iota(0zu, spacesCount)) TRY(untake());
-                tokenize_content(*this, tokens.value());
+                while (!eof() && !is_percent(TRY(peek())))
+                {
+                    auto token = TRY(tokenize_content(*this));
+                    if (std::ranges::all_of(token.data, is_space)) continue;
+                    tokens.value().push_back(std::move(token));
+                }
             }
 
             break;
         }
         default: {
-            tokenize_content(*this, tokens.value());
+            while (!eof() && !is_percent(TRY(peek())))
+            {
+                auto token = TRY(tokenize_content(*this));
+                if (std::ranges::all_of(token.data, is_space)) continue;
+                tokens.value().push_back(std::move(token));
+            }
             break;
         }
         }
