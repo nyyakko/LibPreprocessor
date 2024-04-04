@@ -14,12 +14,32 @@ namespace libpreprocessor {
 class Parser
 {
 public:
+    struct Context
+    {
+        int64_t parent;
+        int64_t child;
+
+        enum class Who
+        {
+            BEGIN__,
+            IF_STATEMENT,
+            ELSE_STATEMENT,
+            SWITCH_STATEMENT,
+            CASE_STATEMENT,
+            PRINT_STATEMENT,
+            EXPRESSION,
+            END__
+        } whois;
+
+        constexpr char const* who_is_as_string() const noexcept;
+    };
+
     explicit Parser(std::vector<Token> const& tokens)
         : tokens_m { tokens | std::views::reverse | std::ranges::to<std::stack>() }
     {}
 
-    liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse(0, 0); }
-    liberror::ErrorOr<std::unique_ptr<INode>> parse(int64_t parent, int64_t child);
+    liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse({}); }
+    liberror::ErrorOr<std::unique_ptr<INode>> parse(Context const& context);
 
     bool eof() const noexcept { return tokens_m.empty(); }
     Token const& peek() { return tokens_m.top(); }
@@ -29,6 +49,25 @@ public:
 private:
     std::stack<Token> tokens_m {};
 };
+
+constexpr char const* Parser::Context::who_is_as_string() const noexcept
+{
+    switch (whois)
+    {
+    case Parser::Context::Who::IF_STATEMENT: return "Context::Who::IF_STATEMENT";
+    case Parser::Context::Who::ELSE_STATEMENT: return "Context::Who::ELSE_STATEMENT";
+    case Parser::Context::Who::SWITCH_STATEMENT: return "Context::Who::SWITCH_STATEMENT";
+    case Parser::Context::Who::CASE_STATEMENT: return "Context::Who::CASE_STATEMENT";
+    case Parser::Context::Who::EXPRESSION: return "Context::Who::EXPRESSION";
+    case Parser::Context::Who::PRINT_STATEMENT: return "Context::Who::PRINT_STATEMENT";
+    case Parser::Context::Who::BEGIN__:
+    case Parser::Context::Who::END__: {
+    break;
+    }
+    }
+
+    return "UNKNOWN";
+}
 
 } // libpreprocessor
 
