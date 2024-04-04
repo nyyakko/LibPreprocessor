@@ -286,7 +286,7 @@ using namespace liberror;
             case IStatementNode::Type::START__:
             case IStatementNode::Type::END__:
             default: {
-                return make_error(PREFIX_ERROR": Unexpected statement \"{}\" reached.", statementNode->type_as_string());
+                return make_error(PREFIX_ERROR": Unexpected statement node of type \"{}\" was reached.", statementNode->type_as_string());
             }
             }
 
