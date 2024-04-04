@@ -260,11 +260,11 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
         case ' ': {
             auto const spacesCount = [&] {
                 auto count = 0zu;
-                while (peek() != '<' && !std::isalpha(peek())) { count += 1; take(); }
+                while (!eof() && peek() != '<' && !std::isalpha(peek())) { count += 1; take(); }
                 return count;
             }();
 
-            if (peek() == '<' && TRY(peek_next()) == '<')
+            if (!eof() && peek() == '<' && TRY(peek_next()) == '<')
             {
                 take(); take();
                 MUST(expect_to_peek(*this, ' '));
