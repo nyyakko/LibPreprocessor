@@ -78,9 +78,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
                 conditionalStatement->branch.first  = TRY(parse({ context.child, context.child + 1, Context::Who::IF_STATEMENT }));
                 conditionalStatement->branch.second = TRY(parse({ context.child, context.parent, Context::Who::IF_STATEMENT }));
 
-                take();
-
-                if (eof() || peek().data != "END")
+                if (eof() || (take(), peek().data != "END"))
                 {
                     return make_error(PREFIX_ERROR": An \"%IF\" statement missing its \"%END\" was reached.");
                 }
@@ -111,9 +109,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
                     return make_error(PREFIX_ERROR": An \"%SWITCH\" statement must have atleast a %DEFAULT case.");
                 }
 
-                take();
-
-                if (eof() || peek().data != "END")
+                if (eof() || (take(), peek().data != "END"))
                 {
                     return make_error(PREFIX_ERROR": An \"%SWITCH\" statement missing its \"%END\" was reached.");
                 }
@@ -134,9 +130,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 
                 selectionMatchStatementNode->branch = TRY(parse({ context.child, context.child + 1, Context::Who::CASE_STATEMENT }));
 
-                take();
-
-                if (eof() || peek().data != "END")
+                if (eof() || (take(), peek().data != "END"))
                 {
                     return make_error(PREFIX_ERROR": An \"%CASE\" statement missing its \"%END\" was reached.");
                 }
@@ -160,9 +154,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
                     return make_error(PREFIX_ERROR": An \"%DEFAULT\" statement didn't had a body.");
                 }
 
-                take();
-
-                if (eof() || peek().data != "END")
+                if (eof() || (take(), peek().data != "END"))
                 {
                     return make_error(PREFIX_ERROR": An \"%DEFAULT\" statement missing its \"%END\" was reached.");
                 }

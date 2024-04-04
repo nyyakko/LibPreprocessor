@@ -2,7 +2,21 @@
 
 #include <libpreprocessor/Preprocessor.hpp>
 
-TEST(tokenization_true_if_statement, missing_closing_angle_bracket_1)
+TEST(tokenization_if_statement, missing_body_end)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {};
+
+    auto static constexpr source =
+        "%IF [<TRUE>]:\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(result.has_error(), true);
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%IF\" statement missing its \"%END\" was reached.");
+}
+
+TEST(tokenization_if_statement, missing_closing_angle_bracket_1)
 {
     using namespace std::literals;
 
@@ -18,7 +32,7 @@ TEST(tokenization_true_if_statement, missing_closing_angle_bracket_1)
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \">\", but found \"]\" instead.");
 }
 
-TEST(tokenization_true_if_statement, missing_closing_angle_bracket_2)
+TEST(tokenization_if_statement, missing_closing_angle_bracket_2)
 {
     using namespace std::literals;
 
@@ -34,7 +48,7 @@ TEST(tokenization_true_if_statement, missing_closing_angle_bracket_2)
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \">\", but found \"]\" instead.");
 }
 
-TEST(tokenization_true_if_statement, missing_closing_square_bracket_1)
+TEST(tokenization_if_statement, missing_closing_square_bracket_1)
 {
     using namespace std::literals;
 
@@ -50,7 +64,7 @@ TEST(tokenization_true_if_statement, missing_closing_square_bracket_1)
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \"]\", but found \":\" instead.");
 }
 
-TEST(tokenization_true_if_statement, missing_closing_square_bracket_2)
+TEST(tokenization_if_statement, missing_closing_square_bracket_2)
 {
     using namespace std::literals;
 
