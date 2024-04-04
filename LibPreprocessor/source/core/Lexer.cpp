@@ -157,7 +157,7 @@ using namespace liberror;
                 token.end   = lexer.cursor();
                 tokens.push_back(std::move(token));
                 tokens.push_back(TRY(tokenize_literal(lexer)));
-                MUST(expect_to_peek(lexer, '>'));
+                TRY(expect_to_peek(lexer, '>'));
                 break;
             }
             case '>': {
@@ -219,7 +219,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             token.end   = cursor_m;
             tokens.value().push_back(std::move(token));
             TRY(tokenize_expression(*this, tokens.value()));
-            MUST(expect_to_peek(*this, ']'));
+            TRY(expect_to_peek(*this, ']'));
             break;
         }
         case ']': {
@@ -276,7 +276,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             {
                 TRY(take());
                 TRY(take());
-                MUST(expect_to_peek(*this, ' '));
+                TRY(expect_to_peek(*this, ' '));
                 TRY(take());
             }
             else
