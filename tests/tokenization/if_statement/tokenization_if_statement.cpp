@@ -41,7 +41,7 @@ TEST(tokenization_true_if_statement, missing_closing_square_bracket_1)
         "    hello!\n"
         "%END\n"sv;
 
-    EXPECT_DEATH((void)libpreprocessor::preprocess(source, context), "Aborted execution because: \\[LibPreprocessor::Runtime/error\\]: Expected \"\\]\", but found \"\\\\n\" instead\\.");
+    EXPECT_DEATH((void)libpreprocessor::preprocess(source, context), "Aborted execution because: \\[LibPreprocessor::Runtime/error\\]: Expected \"\\]\", but found \":\" instead\\.");
 }
 
 TEST(tokenization_true_if_statement, missing_closing_square_bracket_2)
@@ -55,6 +55,6 @@ TEST(tokenization_true_if_statement, missing_closing_square_bracket_2)
         "    hello!\n"
         "%END\n"sv;
 
-    EXPECT_DEATH((void)libpreprocessor::preprocess(source, context), "Aborted execution because: \\[LibPreprocessor::Runtime/error\\]: Expected \"\\]\", but found \"\\\\n\" instead\\.");
+    EXPECT_DEATH((void)libpreprocessor::preprocess(source, context), "Aborted execution because: \\[LibPreprocessor::Runtime/error\\]: Expected \"\\]\", but found \":\" instead\\.");
 }
 

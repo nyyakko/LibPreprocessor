@@ -22,7 +22,7 @@ public:
     liberror::ErrorOr<char> take_next() { LIB_PREPROCESSOR_EOF(); return source_m.at(cursor_m += 2); }
     char peek() { return source_m.at(cursor_m); }
     liberror::ErrorOr<char> peek_next() { LIB_PREPROCESSOR_EOF(); return source_m.at(cursor_m + 1); }
-    bool eof() const { return !((cursor_m + 1) < source_m.size()); }
+    bool eof() const { return cursor_m >= source_m.size(); }
     bool sof() const { return cursor_m == 0; }
     size_t cursor() const { return cursor_m; }
 

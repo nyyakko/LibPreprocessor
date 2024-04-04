@@ -33,10 +33,10 @@ using namespace liberror;
             return std::format("{}", byte);
         };
 
+        if (lexer.eof())
+            return make_error(PREFIX_ERROR": Expected \"{}\", but found \"EOF\" instead.", expected);
         if (lexer.peek() != expected)
-        {
             return make_error(PREFIX_ERROR": Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(lexer.peek()));
-        }
 
         return {};
     }
@@ -62,7 +62,7 @@ using namespace liberror;
         }
     }
 
-    void tokenize_keyword(Lexer& lexer, std::vector<Token>& tokens)
+    Token tokenize_keyword(Lexer& lexer)
     {
         Token token {};
 
@@ -74,12 +74,13 @@ using namespace liberror;
         token.type  = Token::Type::KEYWORD;
         token.begin = lexer.cursor() - token.data.size();
         token.end   = lexer.cursor();
-        tokens.push_back(std::move(token));
 
-        if (is_newline(lexer.peek()) || is_space(lexer.peek()))
+        if (!lexer.eof() && (is_newline(lexer.peek()) || is_space(lexer.peek())))
         {
             lexer.take();
         }
+
+        return token;
     }
 
     ErrorOr<void> tokenize_literal(Lexer& lexer, std::vector<Token>& tokens)
@@ -122,7 +123,7 @@ using namespace liberror;
 
     ErrorOr<void> tokenize_expression(Lexer& lexer, std::vector<Token>& tokens, size_t depth = 0)
     {
-        while (!lexer.eof())
+        while (!lexer.eof() && !(lexer.peek() == ':' || is_newline(lexer.peek())))
         {
             drop_while(lexer, is_space);
 
@@ -206,7 +207,7 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
             token.begin = cursor_m - token.data.size();
             token.end   = cursor_m;
             tokens.value().push_back(std::move(token));
-            tokenize_keyword(*this, tokens.value());
+            tokens.value().push_back(tokenize_keyword(*this));
             break;
         }
         case '[': {
@@ -245,11 +246,11 @@ ErrorOr<std::vector<Token>> Lexer::tokenize()
 
             auto const spacesCount = [&] {
                 auto count = 0zu;
-                while (std::isspace(peek())) { count += 1; take(); }
+                while (!eof() && std::isspace(peek())) { count += 1; take(); }
                 return count;
             }();
 
-            if (peek() != '%')
+            if (!eof() && peek() != '%')
             {
                 for ([[maybe_unused]]auto _ : std::views::iota(0zu, spacesCount)) TRY(untake());
             }
