@@ -74,7 +74,7 @@ ErrorOr<Token> tokenize_keyword(Lexer& lexer)
         token.value().data += TRY(lexer.take());
     }
 
-    token.value().type  = Token::Type::KEYWORD;
+    token.value().type  = Token::Type::STATEMENT;
     token.value().begin = lexer.cursor() - token.value().data.size();
     token.value().end   = lexer.cursor();
 

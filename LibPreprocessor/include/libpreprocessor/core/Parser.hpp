@@ -16,9 +16,6 @@ class Parser
 public:
     struct Context
     {
-        int64_t parent;
-        int64_t child;
-
         enum class Who
         {
             BEGIN__,
@@ -29,9 +26,13 @@ public:
             PRINT_STATEMENT,
             EXPRESSION,
             END__
-        } whois;
+        };
 
         constexpr char const* who_is_as_string() const noexcept;
+
+        int64_t parent;
+        int64_t child;
+        Who whois;
     };
 
     explicit Parser(std::vector<Token> const& tokens)
@@ -60,9 +61,10 @@ constexpr char const* Parser::Context::who_is_as_string() const noexcept
     case Parser::Context::Who::CASE_STATEMENT: return "Context::Who::CASE_STATEMENT";
     case Parser::Context::Who::EXPRESSION: return "Context::Who::EXPRESSION";
     case Parser::Context::Who::PRINT_STATEMENT: return "Context::Who::PRINT_STATEMENT";
+
     case Parser::Context::Who::BEGIN__:
     case Parser::Context::Who::END__: {
-    break;
+        break;
     }
     }
 

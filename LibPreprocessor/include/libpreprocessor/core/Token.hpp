@@ -17,40 +17,42 @@ struct Token
         COLON,
         IDENTIFIER,
         LITERAL,
-        KEYWORD,
+        STATEMENT,
         CONTENT,
         END__
     };
 
-    constexpr char const* type_as_string() const noexcept
-    {
-        switch (type)
-        {
-        case Type::PERCENT: return "Token::Type::PERCENT";
-        case Type::LEFT_SQUARE_BRACKET: return "Token::Type::LEFT_SQUARE_BRACKET";
-        case Type::RIGHT_SQUARE_BRACKET: return "Token::Type::RIGHT_SQUARE_BRACKET";
-        case Type::LEFT_ANGLE_BRACKET: return "Token::Type::LEFT_ANGLE_BRACKET";
-        case Type::RIGHT_ANGLE_BRACKET: return "Token::Type::RIGHT_ANGLE_BRACKET";
-        case Type::COLON: return "Token::Type::COLON";
-        case Type::IDENTIFIER: return "Token::Type::IDENTIFIER";
-        case Type::LITERAL: return "Token::Type::LITERAL";
-        case Type::KEYWORD: return "Token::Type::KEYWORD";
-        case Type::CONTENT: return "Token::Type::CONTENT";
-
-        case Type::BEGIN__:
-        case Type::END__: {
-            break;
-        }
-        }
-
-        return "INVALID";
-    }
+    constexpr char const* type_as_string() const noexcept;
 
     size_t begin;
     size_t end;
     std::string data;
     Type type;
 };
+
+constexpr char const* Token::type_as_string() const noexcept
+{
+    switch (type)
+    {
+    case Type::PERCENT: return "Token::Type::PERCENT";
+    case Type::LEFT_SQUARE_BRACKET: return "Token::Type::LEFT_SQUARE_BRACKET";
+    case Type::RIGHT_SQUARE_BRACKET: return "Token::Type::RIGHT_SQUARE_BRACKET";
+    case Type::LEFT_ANGLE_BRACKET: return "Token::Type::LEFT_ANGLE_BRACKET";
+    case Type::RIGHT_ANGLE_BRACKET: return "Token::Type::RIGHT_ANGLE_BRACKET";
+    case Type::COLON: return "Token::Type::COLON";
+    case Type::IDENTIFIER: return "Token::Type::IDENTIFIER";
+    case Type::LITERAL: return "Token::Type::LITERAL";
+    case Type::STATEMENT: return "Token::Type::STATEMENT";
+    case Type::CONTENT: return "Token::Type::CONTENT";
+
+    case Type::BEGIN__:
+    case Type::END__: {
+        break;
+    }
+    }
+
+    return "UNKNOWN";
+}
 
 constexpr bool is_percent(Token const& token) { return token.type == Token::Type::PERCENT; }
 constexpr bool is_left_square_bracket(Token const& token) { return token.type == Token::Type::LEFT_SQUARE_BRACKET; }
@@ -60,7 +62,7 @@ constexpr bool is_right_angle_bracket(Token const& token) { return token.type ==
 constexpr bool is_colon(Token const& token) { return token.type == Token::Type::COLON; }
 constexpr bool is_identifier(Token const& token) { return token.type == Token::Type::IDENTIFIER; }
 constexpr bool is_literal(Token const& token) { return token.type == Token::Type::LITERAL; }
-constexpr bool is_keyword(Token const& token) { return token.type == Token::Type::KEYWORD; }
+constexpr bool is_statement(Token const& token) { return token.type == Token::Type::STATEMENT; }
 constexpr bool is_content(Token const& token) { return token.type == Token::Type::CONTENT; }
 
 } // libpreprocessor
