@@ -1,15 +1,6 @@
 #include "core/Parser.hpp"
 
-#include "core/nodes/INode.hpp"
-#include "core/nodes/ConditionalStatementNode.hpp"
-#include "core/nodes/ContentNode.hpp"
-#include "core/nodes/BodyNode.hpp"
-#include "core/nodes/ExpressionNode.hpp"
-#include "core/nodes/LiteralNode.hpp"
-#include "core/nodes/OperatorNode.hpp"
-#include "core/nodes/PrintNode.hpp"
-#include "core/nodes/SelectionMatchStatementNode.hpp"
-#include "core/nodes/SelectionStatementNode.hpp"
+#include "core/nodes/Nodes.hpp"
 
 #include <algorithm>
 #include <list>
@@ -247,16 +238,19 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
             // FIXME: for now, all identifiers *must* be an operator. maybe we should be fixin' this in the future?
             auto operatorNode   = std::make_unique<OperatorNode>();
             operatorNode->name  = token.data;
-            operatorNode->arity = [&operatorNode] {
-                if (operatorNode->name == "NOT")
-                    return OperatorNode::Arity::UNARY;
-                else if (std::ranges::contains(std::array { "AND", "OR", "EQUALS", "CONTAINS" }, operatorNode->name))
-                    return OperatorNode::Arity::BINARY;
+            operatorNode->arity = [&] {
+                auto const isUnary = std::ranges::contains(std::array { "NOT" }, operatorNode->name);
+                if (isUnary) return OperatorNode::Arity::UNARY;
+
+                auto const isBinary = std::ranges::contains(std::array { "AND", "OR", "EQUALS", "CONTAINS" }, operatorNode->name);
+                if (isBinary) return OperatorNode::Arity::BINARY;
+
                 [[unlikely]];
+
                 return OperatorNode::Arity{};
             }();
 
-            operatorNode->lhs = (root.value() == nullptr) ? TRY(parse({ context.parent, context.child + 1, context.whois })) : std::move(root.value());
+            operatorNode->lhs = (root.value() == nullptr) ? TRY(parse({ context.parent, context.child, context.whois })) : std::move(root.value());
 
             if (operatorNode->arity == OperatorNode::Arity::BINARY)
             {

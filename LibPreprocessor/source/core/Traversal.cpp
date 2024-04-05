@@ -1,15 +1,6 @@
 #include "core/Traversal.hpp"
 
-#include "core/nodes/INode.hpp"
-#include "core/nodes/IStatement.hpp"
-#include "core/nodes/ConditionalStatementNode.hpp"
-#include "core/nodes/ContentNode.hpp"
-#include "core/nodes/ExpressionNode.hpp"
-#include "core/nodes/LiteralNode.hpp"
-#include "core/nodes/OperatorNode.hpp"
-#include "core/nodes/PrintNode.hpp"
-#include "core/nodes/SelectionMatchStatementNode.hpp"
-#include "core/nodes/SelectionStatementNode.hpp"
+#include "core/nodes/Nodes.hpp"
 
 #include <functional>
 #include <algorithm>

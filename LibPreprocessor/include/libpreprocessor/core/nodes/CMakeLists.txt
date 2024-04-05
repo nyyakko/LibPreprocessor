@@ -1,17 +1,9 @@
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(LibPreprocessor_HeaderFiles ${LibPreprocessor_HeaderFiles}
-    "${DIR}/ConditionalStatementNode.hpp"
-    "${DIR}/SelectionStatementNode.hpp"
-    "${DIR}/SelectionMatchStatementNode.hpp"
-    "${DIR}/PrintNode.hpp"
-    "${DIR}/OperatorNode.hpp"
-    "${DIR}/BodyNode.hpp"
-    "${DIR}/LiteralNode.hpp"
-    "${DIR}/IStatement.hpp"
+    "${DIR}/Nodes.hpp"
     "${DIR}/INode.hpp"
-    "${DIR}/ExpressionNode.hpp"
-    "${DIR}/ContentNode.hpp"
+    "${DIR}/IStatementNode.hpp"
 
     PARENT_SCOPE
 )
