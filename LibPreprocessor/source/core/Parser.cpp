@@ -11,7 +11,7 @@ using namespace liberror;
 
 namespace {
 
-liberror::ErrorOr<void> identify(Parser::Context const& context, Token const& token)
+ErrorOr<void> identify(Parser::Context const& context, Token const& token)
 {
     switch (context.whois)
     {
@@ -28,7 +28,7 @@ liberror::ErrorOr<void> identify(Parser::Context const& context, Token const& to
     }
     }
 
-    return liberror::make_error(PREFIX_ERROR": A stray token of type \"{}\" was reached.", token.type_as_string());
+    return make_error(PREFIX_ERROR": A stray token of type \"{}\" was reached.", token.type_as_string());
 }
 
 ErrorOr<std::unique_ptr<INode>> parse_if_statement_node(Parser& parser, Parser::Context const& context, Token const& innerToken)
