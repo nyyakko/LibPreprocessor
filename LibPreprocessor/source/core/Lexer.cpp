@@ -7,189 +7,189 @@ namespace libpreprocessor {
 
 using namespace liberror;
 
-    namespace {
+namespace {
 
-    bool is_newline(char value) { return value == '\n'; }
-    bool is_space(char value) { return value == ' '; }
-    bool is_percent(char value) { return value == '%'; }
-    bool is_left_angle_bracket(char value) { return value == '<'; }
-    bool is_right_angle_bracket(char value) { return value == '>'; }
-    bool is_right_square_bracket(char value) { return value == ']'; }
-    bool is_colon(char value) { return value == ':'; }
+bool is_newline(char value) { return value == '\n'; }
+bool is_space(char value) { return value == ' '; }
+bool is_percent(char value) { return value == '%'; }
+bool is_left_angle_bracket(char value) { return value == '<'; }
+bool is_right_angle_bracket(char value) { return value == '>'; }
+bool is_right_square_bracket(char value) { return value == ']'; }
+bool is_colon(char value) { return value == ':'; }
 
-    ErrorOr<void> drop_while(Lexer& lexer, std::function<bool(char)> const& predicate)
+ErrorOr<void> drop_while(Lexer& lexer, std::function<bool(char)> const& predicate)
+{
+    while (!lexer.eof() && predicate(TRY(lexer.peek())))
     {
-        while (!lexer.eof() && predicate(TRY(lexer.peek())))
+        TRY(lexer.take());
+    }
+
+    return {};
+}
+
+ErrorOr<void> expect_to_peek(Lexer& lexer, char expected)
+{
+    auto fnUnscaped = [] (char byte) -> std::string {
+        switch (byte)
         {
-            TRY(lexer.take());
+        case '\n': return "\\n";
+        case '\t': return "\\t";
+        case '\r': return "\\r";
+        case '\0': return "\\0";
         }
+        return std::format("{}", byte);
+    };
 
-        return {};
+    if (lexer.eof())
+        return make_error(PREFIX_ERROR": Expected \"{}\", but found \"EOF\" instead.", expected);
+    if (TRY(lexer.peek()) != expected)
+        return make_error(PREFIX_ERROR": Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(TRY(lexer.peek())));
+
+    return {};
+}
+
+ErrorOr<Token> tokenize_content(Lexer& lexer)
+{
+    ErrorOr<Token> token {};
+
+    do
+    {
+        token.value().data += TRY(lexer.take());
+    } while (!lexer.eof() && TRY(lexer.peek()) != '%' && !(is_newline(token.value().data.front()) || is_newline(TRY(lexer.peek()))));
+
+    if (!lexer.eof() && is_newline(TRY(lexer.peek()))) { TRY(lexer.take()); }
+
+    token.value().type  = Token::Type::CONTENT;
+    token.value().begin = lexer.cursor() - token.value().data.size();
+    token.value().end   = lexer.cursor();
+    return token;
+}
+
+ErrorOr<Token> tokenize_keyword(Lexer& lexer)
+{
+    ErrorOr<Token> token {};
+
+    while (!lexer.eof() && TRY(lexer.peek()) != ':' && !(is_space(TRY(lexer.peek())) || is_newline(TRY(lexer.peek()))))
+    {
+        token.value().data += TRY(lexer.take());
     }
 
-    ErrorOr<void> expect_to_peek(Lexer& lexer, char expected)
+    token.value().type  = Token::Type::KEYWORD;
+    token.value().begin = lexer.cursor() - token.value().data.size();
+    token.value().end   = lexer.cursor();
+
+    if (!lexer.eof() && (is_newline(TRY(lexer.peek())) || is_space(TRY(lexer.peek()))))
     {
-        auto fnUnscaped = [] (char byte) -> std::string {
-            switch (byte)
-            {
-            case '\n': return "\\n";
-            case '\t': return "\\t";
-            case '\r': return "\\r";
-            case '\0': return "\\0";
-            }
-            return std::format("{}", byte);
-        };
-
-        if (lexer.eof())
-            return make_error(PREFIX_ERROR": Expected \"{}\", but found \"EOF\" instead.", expected);
-        if (TRY(lexer.peek()) != expected)
-            return make_error(PREFIX_ERROR": Expected \"{}\", but found \"{}\" instead.", expected, fnUnscaped(TRY(lexer.peek())));
-
-        return {};
+        TRY(lexer.take());
     }
 
-    ErrorOr<Token> tokenize_content(Lexer& lexer)
+    return token;
+}
+
+ErrorOr<std::string> build_literal(Lexer& lexer)
+{
+    std::string value {};
+
+    while (!lexer.eof() && !is_right_angle_bracket(TRY(lexer.peek())) && !is_right_square_bracket(TRY(lexer.peek())))
     {
-        ErrorOr<Token> token {};
-
-        do
+        if (is_left_angle_bracket(TRY(lexer.peek())))
         {
-            token.value().data += TRY(lexer.take());
-        } while (!lexer.eof() && TRY(lexer.peek()) != '%' && !(is_newline(token.value().data.front()) || is_newline(TRY(lexer.peek()))));
-
-        if (!lexer.eof() && is_newline(TRY(lexer.peek()))) { TRY(lexer.take()); }
-
-        token.value().type  = Token::Type::CONTENT;
-        token.value().begin = lexer.cursor() - token.value().data.size();
-        token.value().end   = lexer.cursor();
-        return token;
-    }
-
-    ErrorOr<Token> tokenize_keyword(Lexer& lexer)
-    {
-        ErrorOr<Token> token {};
-
-        while (!lexer.eof() && TRY(lexer.peek()) != ':' && !(is_space(TRY(lexer.peek())) || is_newline(TRY(lexer.peek()))))
-        {
-            token.value().data += TRY(lexer.take());
-        }
-
-        token.value().type  = Token::Type::KEYWORD;
-        token.value().begin = lexer.cursor() - token.value().data.size();
-        token.value().end   = lexer.cursor();
-
-        if (!lexer.eof() && (is_newline(TRY(lexer.peek())) || is_space(TRY(lexer.peek()))))
-        {
-            TRY(lexer.take());
-        }
-
-        return token;
-    }
-
-    ErrorOr<std::string> build_literal(Lexer& lexer)
-    {
-        std::string value {};
-
-        while (!lexer.eof() && !is_right_angle_bracket(TRY(lexer.peek())) && !is_right_square_bracket(TRY(lexer.peek())))
-        {
-            if (is_left_angle_bracket(TRY(lexer.peek())))
-            {
-                value += TRY(lexer.take());
-                value += TRY(build_literal(lexer));
-            }
-
             value += TRY(lexer.take());
+            value += TRY(build_literal(lexer));
         }
 
-        return value;
+        value += TRY(lexer.take());
     }
 
-    ErrorOr<Token> tokenize_literal(Lexer& lexer)
+    return value;
+}
+
+ErrorOr<Token> tokenize_literal(Lexer& lexer)
+{
+    ErrorOr<Token> token {};
+
+    token.value().data  = TRY(build_literal(lexer));
+    token.value().begin = lexer.cursor() - token.value().data.size();
+    token.value().end   = lexer.cursor();
+    token.value().type  = [&] {
+        if ((token.value().data.starts_with("<") && token.value().data.ends_with(">") && token.value().data.contains(':')) &&
+            !(token.value().data.starts_with("<<") || token.value().data.ends_with(">>")))
+            return Token::Type::IDENTIFIER;
+        return Token::Type::LITERAL;
+    }();
+
+    return token;
+}
+
+ErrorOr<void> tokenize_expression(Lexer& lexer, std::vector<Token>& tokens, size_t depth = 0)
+{
+    while (!lexer.eof() && !(is_colon(TRY(lexer.peek())) || is_newline(TRY(lexer.peek()))))
     {
-        ErrorOr<Token> token {};
+        TRY(drop_while(lexer, is_space));
 
-        token.value().data  = TRY(build_literal(lexer));
-        token.value().begin = lexer.cursor() - token.value().data.size();
-        token.value().end   = lexer.cursor();
-        token.value().type  = [&] {
-            if ((token.value().data.starts_with("<") && token.value().data.ends_with(">") && token.value().data.contains(':')) &&
-                !(token.value().data.starts_with("<<") || token.value().data.ends_with(">>")))
-                return Token::Type::IDENTIFIER;
-            return Token::Type::LITERAL;
-        }();
-
-        return token;
-    }
-
-    ErrorOr<void> tokenize_expression(Lexer& lexer, std::vector<Token>& tokens, size_t depth = 0)
-    {
-        while (!lexer.eof() && !(is_colon(TRY(lexer.peek())) || is_newline(TRY(lexer.peek()))))
+        switch (TRY(lexer.peek()))
         {
-            TRY(drop_while(lexer, is_space));
-
-            switch (TRY(lexer.peek()))
-            {
-            case '[': {
-                Token token {};
-                token.type  = Token::Type::LEFT_SQUARE_BRACKET;
-                token.data += TRY(lexer.take());
-                token.begin = lexer.cursor() - token.data.size();
-                token.end   = lexer.cursor();
-                tokens.push_back(std::move(token));
-                TRY(tokenize_expression(lexer, tokens, depth + 1));
-                break;
-            }
-            case ']': {
-                if (depth == 0) return {};
-                Token token {};
-                token.type  = Token::Type::RIGHT_SQUARE_BRACKET;
-                token.data += TRY(lexer.take());
-                token.begin = lexer.cursor() - token.data.size();
-                token.end   = lexer.cursor();
-                tokens.push_back(std::move(token));
-                return {};
-            }
-            case '<': {
-                Token token {};
-                token.type  = Token::Type::LEFT_ANGLE_BRACKET;
-                token.data += TRY(lexer.take());
-                token.begin = lexer.cursor() - token.data.size();
-                token.end   = lexer.cursor();
-                tokens.push_back(std::move(token));
-                tokens.push_back(TRY(tokenize_literal(lexer)));
-                TRY(expect_to_peek(lexer, '>'));
-                break;
-            }
-            case '>': {
-                Token token {};
-                token.type  = Token::Type::RIGHT_ANGLE_BRACKET;
-                token.data += TRY(lexer.take());
-                token.begin = lexer.cursor() - token.data.size();
-                token.end   = lexer.cursor();
-                tokens.push_back(std::move(token));
-                break;
-            }
-            default: {
-                Token token {};
-                token.type = Token::Type::IDENTIFIER;
-
-                while (!lexer.eof() && !is_space(TRY(lexer.peek())))
-                {
-                    token.data += TRY(lexer.take());
-                }
-
-                token.begin = lexer.cursor() - token.data.size();
-                token.end   = lexer.cursor();
-                tokens.push_back(std::move(token));
-                break;
-            }
-            }
+        case '[': {
+            Token token {};
+            token.type  = Token::Type::LEFT_SQUARE_BRACKET;
+            token.data += TRY(lexer.take());
+            token.begin = lexer.cursor() - token.data.size();
+            token.end   = lexer.cursor();
+            tokens.push_back(std::move(token));
+            TRY(tokenize_expression(lexer, tokens, depth + 1));
+            break;
         }
+        case ']': {
+            if (depth == 0) return {};
+            Token token {};
+            token.type  = Token::Type::RIGHT_SQUARE_BRACKET;
+            token.data += TRY(lexer.take());
+            token.begin = lexer.cursor() - token.data.size();
+            token.end   = lexer.cursor();
+            tokens.push_back(std::move(token));
+            return {};
+        }
+        case '<': {
+            Token token {};
+            token.type  = Token::Type::LEFT_ANGLE_BRACKET;
+            token.data += TRY(lexer.take());
+            token.begin = lexer.cursor() - token.data.size();
+            token.end   = lexer.cursor();
+            tokens.push_back(std::move(token));
+            tokens.push_back(TRY(tokenize_literal(lexer)));
+            TRY(expect_to_peek(lexer, '>'));
+            break;
+        }
+        case '>': {
+            Token token {};
+            token.type  = Token::Type::RIGHT_ANGLE_BRACKET;
+            token.data += TRY(lexer.take());
+            token.begin = lexer.cursor() - token.data.size();
+            token.end   = lexer.cursor();
+            tokens.push_back(std::move(token));
+            break;
+        }
+        default: {
+            Token token {};
+            token.type = Token::Type::IDENTIFIER;
 
-        return {};
+            while (!lexer.eof() && !is_space(TRY(lexer.peek())))
+            {
+                token.data += TRY(lexer.take());
+            }
+
+            token.begin = lexer.cursor() - token.data.size();
+            token.end   = lexer.cursor();
+            tokens.push_back(std::move(token));
+            break;
+        }
+        }
     }
 
-    }
+    return {};
+}
+
+}
 
 ErrorOr<std::vector<Token>> Lexer::tokenize()
 {

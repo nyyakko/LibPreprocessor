@@ -9,29 +9,29 @@ namespace libpreprocessor {
 
 using namespace liberror;
 
-    namespace {
+namespace {
 
-    constexpr liberror::ErrorOr<void> identify(Parser::Context const& context, Token const& token)
+constexpr liberror::ErrorOr<void> identify(Parser::Context const& context, Token const& token)
+{
+    switch (context.whois)
     {
-        switch (context.whois)
-        {
-        case Parser::Context::Who::IF_STATEMENT:
-        case Parser::Context::Who::ELSE_STATEMENT:
-        case Parser::Context::Who::SWITCH_STATEMENT:
-        case Parser::Context::Who::CASE_STATEMENT:
-        case Parser::Context::Who::EXPRESSION:
-        case Parser::Context::Who::PRINT_STATEMENT: return {};
+    case Parser::Context::Who::IF_STATEMENT:
+    case Parser::Context::Who::ELSE_STATEMENT:
+    case Parser::Context::Who::SWITCH_STATEMENT:
+    case Parser::Context::Who::CASE_STATEMENT:
+    case Parser::Context::Who::EXPRESSION:
+    case Parser::Context::Who::PRINT_STATEMENT: return {};
 
-        case Parser::Context::Who::BEGIN__:
-        case Parser::Context::Who::END__: {
-            break;
-        }
-        }
-
-        return liberror::make_error(PREFIX_ERROR": A stray token of type \"{}\" was reached.", token.type_as_string());
+    case Parser::Context::Who::BEGIN__:
+    case Parser::Context::Who::END__: {
+        break;
+    }
     }
 
-    }
+    return liberror::make_error(PREFIX_ERROR": A stray token of type \"{}\" was reached.", token.type_as_string());
+}
+
+}
 
 ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 {
