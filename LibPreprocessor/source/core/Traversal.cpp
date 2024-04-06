@@ -14,6 +14,8 @@ using namespace std::literals;
 
     namespace detail {
 
+    static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context);
+
     namespace {
 
     std::string unquoted(std::string const& string)
@@ -228,11 +230,7 @@ using namespace std::literals;
         return "FALSE"s;
     }
 
-    }
-
-    static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context);
-
-    static ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
+    ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
     {
         auto const* node = static_cast<ConditionalStatementNode const*>(statementNode);
 
@@ -248,7 +246,7 @@ using namespace std::literals;
         return {};
     }
 
-    static ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
+    ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
     {
         if (statementNode->statement_type() == IStatementNode::Type::MATCH_CASE)
         {
@@ -294,7 +292,7 @@ using namespace std::literals;
         return {};
     }
 
-    static ErrorOr<void> traverse_print_statement(IStatementNode const* statementNode, PreprocessorContext const& context)
+    ErrorOr<void> traverse_print_statement(IStatementNode const* statementNode, PreprocessorContext const& context)
     {
         auto const* node = static_cast<PrintStatementNode const*>(statementNode);
 
@@ -306,7 +304,7 @@ using namespace std::literals;
         return {};
     }
 
-    static ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
+    ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
     {
         auto const* node = static_cast<IStatementNode const*>(head.get());
 
@@ -336,7 +334,7 @@ using namespace std::literals;
         return {};
     }
 
-    static ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringstream& stream)
+    ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringstream& stream)
     {
         auto const* contentNode = static_cast<ContentNode const*>(head.get());
         stream << contentNode->content;
@@ -347,6 +345,8 @@ using namespace std::literals;
         }
 
         return {};
+    }
+
     }
 
     static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
