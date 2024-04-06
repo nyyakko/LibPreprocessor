@@ -12,7 +12,7 @@ TEST(tokenization_switch_statement, missing_body_end)
         "%SWITCH [<TRUE>]:\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%SWITCH\" statement missing its \"%END\" was reached.");
 }
 
@@ -30,7 +30,7 @@ TEST(tokenization_switch_statement_no_match, missing_angle_bracket_1)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \">\", but found \"]\" instead.");
 }
 
@@ -48,7 +48,7 @@ TEST(tokenization_switch_statement_no_match, missing_angle_bracket_2)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \">\", but found \"]\" instead.");
 }
 
@@ -66,7 +66,7 @@ TEST(tokenization_switch_statement_no_match, missing_square_bracket_1)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \"]\", but found \":\" instead.");
 }
 
@@ -84,7 +84,7 @@ TEST(tokenization_switch_statement_no_match, missing_square_bracket_2)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Expected \"]\", but found \":\" instead.");
 }
 

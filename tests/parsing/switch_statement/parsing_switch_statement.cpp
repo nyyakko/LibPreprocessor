@@ -15,7 +15,7 @@ TEST(parsing_switch_statement, missing_match_expression_without_default)
         "\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%SWITCH\" statement didn't had a expression to match.");
     }
     {
@@ -24,7 +24,7 @@ TEST(parsing_switch_statement, missing_match_expression_without_default)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%SWITCH\" statement didn't had a expression to match.");
     }
 }
@@ -45,7 +45,7 @@ TEST(parsing_switch_statement, missing_match_expression_with_default)
         "\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%SWITCH\" statement didn't had a expression to match.");
     }
     {
@@ -57,7 +57,7 @@ TEST(parsing_switch_statement, missing_match_expression_with_default)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%SWITCH\" statement didn't had a expression to match.");
     }
 }
@@ -79,7 +79,7 @@ TEST(parsing_switch_statement, missing_case_match_expression)
         "\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%CASE\" statement didn't had a expression to match.");
     }
     {
@@ -92,7 +92,7 @@ TEST(parsing_switch_statement, missing_case_match_expression)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%CASE\" statement didn't had a expression to match.");
     }
 }
@@ -114,7 +114,7 @@ TEST(parsing_switch_statement, missing_default_case_colon)
         "\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%DEFAULT\" statement didn't had a body.");
     }
     {
@@ -127,7 +127,7 @@ TEST(parsing_switch_statement, missing_default_case_colon)
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
-    EXPECT_EQ(result.has_error(), true);
+    EXPECT_EQ(!result.has_value(), true);
     EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: An \"%DEFAULT\" statement didn't had a body.");
     }
 }

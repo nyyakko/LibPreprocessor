@@ -64,7 +64,6 @@ struct BodyNode : INode
 {
     NODE_TYPE(INode::Type::BODY);
     virtual ~BodyNode() override = default;
-    std::list<std::unique_ptr<INode>> nodes {};
 };
 
 struct ConditionalStatementNode : IStatementNode

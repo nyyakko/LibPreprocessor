@@ -41,8 +41,11 @@ ErrorOr<bool> decay_to_boolean_literal(std::string_view literal)
     if (literal.empty()) return make_error(PREFIX_ERROR": Cannot decay an empty literal.");
     if (literal == "TRUE") return true;
     if (literal == "FALSE") return false;
+
     auto const result = decay_to_integer_literal(literal);
-    if (result.has_error()) return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a boolean.", literal);
+    if (!result.has_value())
+        return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a boolean.", literal);
+
     return static_cast<bool>(result.value());
 }
 

@@ -44,7 +44,7 @@ TEST(print_statement, simple)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "hello!\n");
 }
@@ -67,7 +67,7 @@ TEST(print_statement, single_string_interpolation)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "TESTING\n");
 }
@@ -90,7 +90,7 @@ TEST(print_statement, normal_with_single_string_interpolation)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "TEST: TESTING\n");
 }
@@ -113,7 +113,7 @@ TEST(print_statement, single_string_interpolation_ignore)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "<ENV:TEST>\n");
 }
@@ -136,7 +136,7 @@ TEST(print_statement, normal_with_single_string_interpolation_ignored)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "TEST: <ENV:TEST>\n");
 }
@@ -159,7 +159,7 @@ TEST(print_statement, multiple_interpolated_string)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "TESTING is TESTING\n");
 }
@@ -182,7 +182,7 @@ TEST(print_statement, multiple_interpolated_string_with_one_ignored)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "<ENV:TEST> is TESTING\n");
 }
@@ -205,7 +205,7 @@ TEST(print_statement, multiple_interpolated_string_with_all_ignored)
     auto const result = libpreprocessor::preprocess(source, context);
     restore_stdout(previousState);
 
-    EXPECT_EQ(result.has_error(), false);
+    EXPECT_EQ(!result.has_value(), false);
 
     EXPECT_STREQ(buffer.data(), "<ENV:TEST> is <ENV:TEST>\n");
 }
