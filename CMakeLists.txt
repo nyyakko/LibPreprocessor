@@ -10,18 +10,14 @@ include(cmake/remote_clone.cmake)
 include(cmake/enable_tests.cmake)
 include(GNUInstallDirs)
 
-option(ENABLE_CLANGTIDY "" TRUE)
-option(ENABLE_CPPCHECK "" TRUE)
-option(ENABLE_TESTING "" TRUE)
-
 if (ENABLE_TESTING)
     enable_tests()
 endif()
 
-# set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
 set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
+# set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
 
-CPMAddPackage("gh:nyyakko/LibError#619ea7e")
+CPMAddPackage("gh:nyyakko/expected@master#52f2dd4")
 
 set(LibPreprocessor_ExternalLibraries LibError::LibError)
 
