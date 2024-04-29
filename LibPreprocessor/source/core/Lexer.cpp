@@ -2,8 +2,9 @@
 
 #include <fmt/format.h>
 
-#include <functional>
 #include <algorithm>
+#include <functional>
+#include <ranges>
 
 namespace libpreprocessor {
 

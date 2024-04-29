@@ -3,7 +3,6 @@
 #include "Token.hpp"
 
 #include <liberror/ErrorOr.hpp>
-#include <liberror/types/TraceError.hpp>
 
 namespace libpreprocessor {
 

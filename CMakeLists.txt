@@ -2,11 +2,8 @@ cmake_minimum_required(VERSION 3.25)
 
 project(LibPreprocessor LANGUAGES CXX)
 
-set(EXPORT_DIR "${CMAKE_SOURCE_DIR}/build/cmake")
-
 include(cmake/static_analyzers.cmake)
-include(cmake/CPM.cmake)
-include(cmake/remote_clone.cmake)
+include(cmake/get_cpm.cmake)
 include(cmake/enable_tests.cmake)
 include(GNUInstallDirs)
 
@@ -18,12 +15,11 @@ set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-
 # set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
 
 CPMAddPackage("gh:fmtlib/fmt#10.2.1")
-
 CPMAddPackage(
     NAME LibError
     GITHUB_REPOSITORY nyyakko/LibError
     GIT_TAG master
-    VERSION af5ad0c
+    VERSION 18caf8c
     OPTIONS "ENABLE_CLANGTIDY OFF" "ENABLE_CPPCHECK OFF"
 )
 

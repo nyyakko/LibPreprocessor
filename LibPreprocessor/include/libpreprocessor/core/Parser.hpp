@@ -4,10 +4,10 @@
 #include "nodes/INode.hpp"
 
 #include <liberror/ErrorOr.hpp>
-#include <liberror/types/TraceError.hpp>
 
-#include <vector>
+#include <ranges>
 #include <stack>
+#include <vector>
 
 namespace libpreprocessor {
 
