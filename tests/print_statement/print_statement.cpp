@@ -2,7 +2,6 @@
 
 #include <libpreprocessor/Preprocessor.hpp>
 
-#include <io.h>
 #include <stdio.h>
 #include <array>
 
@@ -11,7 +10,7 @@ static constexpr auto BUFFER_SIZE = 1024;
 int redirect_stdout_to_buffer(std::array<char, BUFFER_SIZE>& buffer)
 {
     fflush(stdout);
-    auto previousState = _dup(_fileno(stdout));
+    auto previousState = dup(fileno(stdout));
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     (void)freopen("NUL", "a", stdout);
@@ -27,7 +26,7 @@ void restore_stdout(int state)
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     (void)freopen("NUL", "a", stdout);
 #pragma clang diagnostic pop
-    _dup2(state, _fileno(stdout));
+    dup2(state, fileno(stdout));
     setvbuf(stdout, NULL, _IONBF, BUFFER_SIZE);
 }
 

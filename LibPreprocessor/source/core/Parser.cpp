@@ -250,14 +250,16 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
             auto operatorNode   = std::make_unique<OperatorNode>();
             operatorNode->name  = token.data;
             operatorNode->arity = [&] {
-                auto const isUnary = std::ranges::contains(std::array { "NOT" }, operatorNode->name);
-                if (isUnary) return OperatorNode::Arity::UNARY;
+                static constexpr auto unaryOperators = { "NOT" };
+                if (std::ranges::find(unaryOperators, operatorNode->name) != unaryOperators.end())
+                    return OperatorNode::Arity::UNARY;
 
-                auto const isBinary = std::ranges::contains(std::array { "AND", "OR", "EQUALS", "CONTAINS" }, operatorNode->name);
-                if (isBinary) return OperatorNode::Arity::BINARY;
+                static constexpr auto binaryOperators = { "AND", "OR", "EQUALS", "CONTAINS" };
+                if (std::ranges::find(binaryOperators, operatorNode->name) != binaryOperators.end())
+                    return OperatorNode::Arity::BINARY;
 
                 [[unlikely]];
-
+                assert(false && "UNREACHABLE");
                 return OperatorNode::Arity{};
             }();
 

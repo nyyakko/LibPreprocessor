@@ -11,13 +11,21 @@ include(cmake/enable_tests.cmake)
 include(GNUInstallDirs)
 
 if (ENABLE_TESTING)
-    enable_tests()
+    enable_tests(${PROJECT_NAME})
 endif()
 
 set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
 # set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
 
-CPMAddPackage("gh:nyyakko/expected@master#52f2dd4")
+CPMAddPackage("gh:fmtlib/fmt#10.2.1")
+
+CPMAddPackage(
+    NAME LibError
+    GITHUB_REPOSITORY nyyakko/LibError
+    GIT_TAG master
+    VERSION 15e1b6d
+    OPTIONS "ENABLE_CLANGTIDY OFF" "ENABLE_CPPCHECK OFF"
+)
 
 set(LibPreprocessor_ExternalLibraries LibError::LibError)
 

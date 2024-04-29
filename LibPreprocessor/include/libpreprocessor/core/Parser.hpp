@@ -36,8 +36,12 @@ public:
     };
 
     explicit Parser(std::vector<Token> const& tokens)
-        : tokens_m { tokens | std::views::reverse | std::ranges::to<std::stack>() }
-    {}
+    {
+        for (auto&& token : tokens | std::views::reverse)
+        {
+            tokens_m.push(std::move(token));
+        }
+    }
 
     liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse({}); }
     liberror::ErrorOr<std::unique_ptr<INode>> parse(Context const& context);

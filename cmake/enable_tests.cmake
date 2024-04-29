@@ -1,13 +1,14 @@
-function(enable_tests)
+function(enable_tests PROJECT)
 
     if (NOT ${CMAKE_HOST_SYSTEM_NAME} MATCHES "Windows")
-        message(STATUS "[${PROJECT_NAME}] running on ${CMAKE_HOST_SYSTEM_NAME}, sanitizers for tests are enabled.")
+        message(STATUS "[${PROJECT}] running on ${CMAKE_HOST_SYSTEM_NAME}, sanitizers for tests are enabled.")
         set(LibPreprocessor_TestsLinkerOptions ${LibPreprocessor_TestsLinkerOptions} -fsanitize=undefined,leak,address)
     else()
-        message(STATUS "[${PROJECT_NAME}] running on ${CMAKE_HOST_SYSTEM_NAME}, sanitizers for tests are disabled.")
+        message(STATUS "[${PROJECT}] running on ${CMAKE_HOST_SYSTEM_NAME}, sanitizers for tests are disabled.")
     endif()
 
     set(LibPreprocessor_TestsCompilerOptions ${LibPreprocessor_TestsCompilerOptions} ${LibPreprocessor_CompilerOptions})
+    set(LibPreprocessor_TestsLinkerOptions ${LibPreprocessor_TestsLinkerOptions} ${LibPreprocessor_LinkerOptions})
 
     include(GoogleTest)
 
@@ -20,6 +21,6 @@ function(enable_tests)
     )
 
     enable_testing()
-    add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
+    add_subdirectory(tests)
 
 endfunction()

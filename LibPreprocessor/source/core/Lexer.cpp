@@ -1,5 +1,7 @@
 #include "core/Lexer.hpp"
 
+#include <fmt/format.h>
+
 #include <functional>
 #include <algorithm>
 
@@ -37,7 +39,7 @@ ErrorOr<void> expect_to_peek(Lexer& lexer, char expected)
         case '\r': return "\\r";
         case '\0': return "\\0";
         }
-        return std::format("{}", byte);
+        return fmt::format("{}", byte);
     };
 
     if (lexer.eof())

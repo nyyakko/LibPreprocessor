@@ -22,7 +22,7 @@ struct IStatementNode : INode
         END__
     };
 
-    virtual ~IStatementNode() = default;
+    virtual ~IStatementNode() override = default;
     virtual constexpr Type statement_type() const = 0;
     virtual constexpr char const* statement_type_as_string() const = 0;
 

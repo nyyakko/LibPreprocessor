@@ -27,6 +27,7 @@ function(enable_cppcheck PROJECT)
             --inconclusive
             --error-exitcode=2
             --std=c++23
+            --check-level=exhaustive
         )
     else()
         set(CPPCHECK_OPTIONS ${CPPCHECK} --template=${CPPCHECK_TEMPLATE} ${CPPCHECK_OPTIONS})

@@ -2,9 +2,12 @@
 
 #include "core/nodes/Nodes.hpp"
 
+#include <fmt/format.h>
+
 #include <functional>
 #include <algorithm>
 #include <sstream>
+#include <ranges>
 #include <array>
 
 namespace libpreprocessor {
@@ -76,7 +79,7 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
                 }
                 index += 1;
 
-                auto const originalValue = std::format("<{}>", value);
+                auto const originalValue = fmt::format("<{}>", value);
 
                 if (context.localVariables.contains(value)) return { originalValue, context.localVariables.at(value) };
                 if (context.environmentVariables.contains(value)) return { originalValue, context.environmentVariables.at(value) };
@@ -84,7 +87,7 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
                 return { originalValue, value };
             };
 
-            result.value() += std::format("{}", fnParseIdentifier().second);
+            result.value() += fmt::format("{}", fnParseIdentifier().second);
             index -= 1;
         }
         else
@@ -109,7 +112,9 @@ ErrorOr<std::string> evaluate_unary_operator_expression(OperatorNode const* oper
         return interpolate_literal(value, context);
     }());
 
-    if (std::ranges::contains(std::array { "NOT" }, operatorNode->name))
+    static constexpr auto operators = { "NOT" };
+
+    if (std::ranges::find(operators, operatorNode->name) != operators.end())
     {
         return TRY(decay_to_boolean_literal(lhs)) ? "FALSE"s : "TRUE"s;
     }
@@ -136,7 +141,14 @@ ErrorOr<std::string> evaluate_binary_operator_expression(OperatorNode const* ope
         return interpolate_literal(value, context);
     }());
 
-    if (operatorNode->name == "CONTAINS") return std::ranges::contains_subrange(lhs, rhs) ? "TRUE"s : "FALSE"s;
+    if (operatorNode->name == "CONTAINS")
+    {
+        return
+            std::ranges::any_of(lhs | std::views::split(','), [&] (auto&& value) { return value.data() == rhs; })
+                ? "TRUE"s
+                : "FALSE"s;
+    }
+
     if (operatorNode->name == "EQUALS") return lhs == rhs ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "AND") return lhs == "TRUE" && rhs == "TRUE" ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "OR") return lhs == "TRUE" || rhs == "TRUE" ? "TRUE"s : "FALSE"s;
@@ -302,7 +314,7 @@ ErrorOr<void> traverse_print_statement(IStatementNode const* statementNode, Prep
     if (node->content == nullptr) return make_error(PREFIX_ERROR": \"%PRINT\" statement didn't had an \"INode::Type::EXPRESSION\".");
     if (node->content->type() != INode::Type::EXPRESSION) return make_error(PREFIX_ERROR": %PRINT statement expects an \"INode::Type::EXPRESSION\" as argument, but instead got \"{}\".", node->content->type_as_string());
 
-    std::println("{}", TRY(evaluate_expression(node->content, context)));
+    fmt::println("{}", TRY(evaluate_expression(node->content, context)));
 
     return {};
 }
