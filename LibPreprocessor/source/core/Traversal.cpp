@@ -141,14 +141,7 @@ ErrorOr<std::string> evaluate_binary_operator_expression(OperatorNode const* ope
         return interpolate_literal(value, context);
     }());
 
-    if (operatorNode->name == "CONTAINS")
-    {
-        return
-            std::ranges::any_of(lhs | std::views::split(','), [&] (auto&& value) { return value.data() == rhs; })
-                ? "TRUE"s
-                : "FALSE"s;
-    }
-
+    if (operatorNode->name == "CONTAINS") return lhs.contains(rhs) ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "EQUALS") return lhs == rhs ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "AND") return lhs == "TRUE" && rhs == "TRUE" ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "OR") return lhs == "TRUE" || rhs == "TRUE" ? "TRUE"s : "FALSE"s;
