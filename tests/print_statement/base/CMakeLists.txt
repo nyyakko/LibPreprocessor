@@ -1,8 +1,8 @@
-set(TEST_NAME tokenization_print_statement)
+set(TEST_NAME print_statement)
 
 project(${TEST_NAME} LANGUAGES CXX)
 
-add_executable(${TEST_NAME} "${TEST_NAME}.cpp")
+add_executable(${TEST_NAME} Main.cpp)
 
 enable_clang_tidy(${TEST_NAME})
 enable_cppcheck(${TEST_NAME})
