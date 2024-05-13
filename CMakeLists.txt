@@ -19,7 +19,7 @@ CPMAddPackage(
     NAME LibError
     GITHUB_REPOSITORY nyyakko/LibError
     GIT_TAG master
-    VERSION 18caf8c
+    VERSION db65f83
     OPTIONS "ENABLE_CLANGTIDY OFF" "ENABLE_CPPCHECK OFF"
 )
 
