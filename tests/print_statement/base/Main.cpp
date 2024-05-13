@@ -53,7 +53,6 @@ TEST(print_statement, single_string_interpolation)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -76,7 +75,6 @@ TEST(print_statement, normal_with_single_string_interpolation)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -99,7 +97,6 @@ TEST(print_statement, single_string_interpolation_ignore)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -122,7 +119,6 @@ TEST(print_statement, normal_with_single_string_interpolation_ignored)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -145,7 +141,6 @@ TEST(print_statement, multiple_interpolated_string)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -168,7 +163,6 @@ TEST(print_statement, multiple_interpolated_string_with_one_ignored)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -191,7 +185,6 @@ TEST(print_statement, multiple_interpolated_string_with_all_ignored)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }

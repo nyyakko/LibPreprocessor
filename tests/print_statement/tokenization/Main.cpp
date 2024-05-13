@@ -19,7 +19,6 @@ TEST(tokenization_print_statement, missing_closing_angle_bracket_1)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }
@@ -36,7 +35,6 @@ TEST(tokenization_print_statement, missing_closing_square_bracket_2)
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }

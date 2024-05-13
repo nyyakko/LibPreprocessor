@@ -43,7 +43,6 @@ int main()
     std::cin >> name;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:USERNAME", name },
         }
@@ -76,7 +75,6 @@ int main()
     std::cin >> name;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:LIKEPOTATOES", name },
         }

@@ -4,11 +4,8 @@
 
 #include <fmt/format.h>
 
-#include <functional>
 #include <algorithm>
 #include <sstream>
-#include <ranges>
-#include <array>
 
 namespace libpreprocessor {
 
@@ -73,10 +70,13 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
                 }
                 index += 1;
 
-                auto const originalValue = fmt::format("<{}>", value);
+                auto const originalValue = fmt::format("<{}>", result);
+                auto const replacedValue =
+                    context.environmentVariables.contains(result)
+                        ? context.environmentVariables.at(result)
+                        : result;
 
-                if (context.localVariables.contains(value)) return { originalValue, context.localVariables.at(value) };
-                if (context.environmentVariables.contains(value)) return { originalValue, context.environmentVariables.at(value) };
+                return { originalValue, replacedValue };
             }(context, string, index);
 
             result->append(value);
@@ -89,8 +89,7 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
         }
     }
 
-    if (context.localVariables.contains(result.value())) return context.localVariables.at(result.value());
-    if (context.environmentVariables.contains(result.value())) return context.environmentVariables.at(result.value());
+    if (context.environmentVariables.contains(*result)) return context.environmentVariables.at(*result);
 
     return result;
 }
@@ -134,10 +133,10 @@ ErrorOr<std::string> evaluate_binary_operator_expression(OperatorNode const* ope
         return interpolate_literal(value, context);
     }());
 
-    if (operatorNode->name == "CONTAINS") return lhs.contains(rhs) ? "TRUE"s : "FALSE"s;
-    if (operatorNode->name == "EQUALS") return lhs == rhs ? "TRUE"s : "FALSE"s;
-    if (operatorNode->name == "AND") return lhs == "TRUE" && rhs == "TRUE" ? "TRUE"s : "FALSE"s;
-    if (operatorNode->name == "OR") return lhs == "TRUE" || rhs == "TRUE" ? "TRUE"s : "FALSE"s;
+    if (operatorNode->name == "CONTAINS") return lhs.contains(rhs)              ? "TRUE"s : "FALSE"s;
+    if (operatorNode->name == "EQUALS")   return lhs == rhs                     ? "TRUE"s : "FALSE"s;
+    if (operatorNode->name == "AND")      return lhs == "TRUE" && rhs == "TRUE" ? "TRUE"s : "FALSE"s;
+    if (operatorNode->name == "OR")       return lhs == "TRUE" || rhs == "TRUE" ? "TRUE"s : "FALSE"s;
 
     return make_error(PREFIX_ERROR": Unknown binary operator \"{}\" was reached.", operatorNode->name);
 }
@@ -189,8 +188,6 @@ ErrorOr<std::string> evaluate_literal_expression(ExpressionNode const* expressio
     auto const value = literalNode->value;
 
     if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
-
-    if (context.localVariables.contains(value)) return context.localVariables.at(value);
     if (context.environmentVariables.contains(value)) return context.environmentVariables.at(value);
 
     return interpolate_literal(value, context);
@@ -240,7 +237,6 @@ ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::st
 
     if (TRY(evaluate_expression(node->condition, context)) == "TRUE")
         return traverse(node->branch.first, stream, context);
-
     if (node->branch.second)
         return traverse(node->branch.second, stream, context);
 

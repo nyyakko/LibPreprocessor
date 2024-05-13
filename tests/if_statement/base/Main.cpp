@@ -23,7 +23,6 @@ TEST(true_if_statement_with_complex_expression_using_the_preprocessor_context, s
     using namespace std::literals;
 
     libpreprocessor::PreprocessorContext context {
-        .localVariables = {},
         .environmentVariables = {
             { "ENV:TEST", "TESTING" }
         }

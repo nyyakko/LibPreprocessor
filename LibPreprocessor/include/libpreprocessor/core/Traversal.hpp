@@ -11,7 +11,6 @@ namespace libpreprocessor {
 
 struct PreprocessorContext
 {
-    std::unordered_map<std::string, std::string> localVariables {};
     std::unordered_map<std::string, std::string> environmentVariables {};
 };
 
