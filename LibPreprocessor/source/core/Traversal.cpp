@@ -62,20 +62,14 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
     {
         if (string.at(index) == '<')
         {
-            std::function<std::pair<std::string, std::string>()> fnParseIdentifier {};
-
-            fnParseIdentifier = [&] () -> std::pair<std::string, std::string> {
-                std::string value {};
+            auto const [_, value] = [] (this auto self, auto const& context, auto const& string, auto& index) -> std::pair<std::string, std::string> {
+                std::string result {};
 
                 index += 1;
                 while (string.at(index) != '>')
                 {
-                    if (string.at(index) == '<') value = fnParseIdentifier().first;
-                    else
-                    {
-                        value += string.at(index);
-                        index += 1;
-                    }
+                    if (string.at(index) == '<') result  = self(context, string, index).first;
+                    else                         result += string.at(index++);
                 }
                 index += 1;
 
@@ -83,16 +77,15 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
 
                 if (context.localVariables.contains(value)) return { originalValue, context.localVariables.at(value) };
                 if (context.environmentVariables.contains(value)) return { originalValue, context.environmentVariables.at(value) };
+            }(context, string, index);
 
-                return { originalValue, value };
-            };
+            result->append(value);
 
-            result.value() += fmt::format("{}", fnParseIdentifier().second);
             index -= 1;
         }
         else
         {
-            result.value() += string.at(index);
+            result->push_back(string.at(index));
         }
     }
 
