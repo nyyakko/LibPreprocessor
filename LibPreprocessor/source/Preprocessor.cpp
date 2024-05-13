@@ -14,7 +14,7 @@ ErrorOr<std::string> preprocess(std::string_view source, PreprocessorContext con
 {
     Lexer lexer { source };
     Parser parser { TRY(lexer.tokenize()) };
-    return traverse(TRY(parser.parse()), context);
+    return interpret(TRY(parser.parse()), context);
 }
 
 ErrorOr<std::string> preprocess(std::filesystem::path path, PreprocessorContext const& context)

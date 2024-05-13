@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Traversal.hpp"
+#include "core/Interpreter.hpp"
 
 #include <liberror/ErrorOr.hpp>
 

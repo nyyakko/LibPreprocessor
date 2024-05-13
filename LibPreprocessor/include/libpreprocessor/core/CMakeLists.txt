@@ -6,7 +6,7 @@ set(LibPreprocessor_HeaderFiles ${LibPreprocessor_HeaderFiles}
     "${DIR}/Lexer.hpp"
     "${DIR}/Parser.hpp"
     "${DIR}/Token.hpp"
-    "${DIR}/Traversal.hpp"
+    "${DIR}/Interpreter.hpp"
 
     PARENT_SCOPE
 )

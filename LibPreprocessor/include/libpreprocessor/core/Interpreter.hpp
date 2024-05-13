@@ -14,7 +14,7 @@ struct PreprocessorContext
     std::unordered_map<std::string, std::string> environmentVariables {};
 };
 
-liberror::ErrorOr<std::string> traverse(std::unique_ptr<INode> const& head, PreprocessorContext const& context);
+liberror::ErrorOr<std::string> interpret(std::unique_ptr<INode> const& head, PreprocessorContext const& context);
 
 } // libpreprocessor
 

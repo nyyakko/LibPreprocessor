@@ -1,4 +1,4 @@
-#include "core/Traversal.hpp"
+#include "core/Interpreter.hpp"
 
 #include "core/nodes/Nodes.hpp"
 
@@ -386,7 +386,7 @@ static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstr
 
 }
 
-ErrorOr<std::string> traverse(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
+ErrorOr<std::string> interpret(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
 {
     std::stringstream sourceStream {};
     TRY(detail::traverse(head, sourceStream, context));
