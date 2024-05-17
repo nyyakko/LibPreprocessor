@@ -9,13 +9,13 @@ TEST(multiple_switch_statement_no_match, single_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"sv;
@@ -32,19 +32,19 @@ TEST(multiple_switch_statement_no_match, multiple_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"sv;
@@ -62,14 +62,14 @@ TEST(surrounded_multiple_switch_statement_no_match, single_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
         "hello!\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
@@ -88,20 +88,20 @@ TEST(surrounded_multiple_switch_statement_no_match, multiple_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
         "hello!\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
@@ -119,8 +119,8 @@ TEST(switch_statement_no_match, single_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"sv;
@@ -137,11 +137,11 @@ TEST(switch_statement_no_match, multiple_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"sv;
@@ -159,8 +159,8 @@ TEST(surrounded_switch_statement_no_match, single_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
@@ -179,11 +179,11 @@ TEST(surrounded_switch_statement_no_match, multiple_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<0>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(0)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
@@ -201,8 +201,8 @@ TEST(switch_statement, single_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<1>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(1)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"sv;
@@ -219,11 +219,11 @@ TEST(switch_statement, multiple_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"sv;
@@ -240,8 +240,8 @@ TEST(switch_statement, single_case_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -261,11 +261,11 @@ TEST(switch_statement, multiple_case_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -285,13 +285,13 @@ TEST(multiple_switch_statement, single_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<1>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(1)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
-        "%SWITCH [<1>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(1)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"sv;
@@ -308,19 +308,19 @@ TEST(multiple_switch_statement, multiple_case_no_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"sv;
@@ -337,16 +337,16 @@ TEST(multiple_switch_statement, single_case_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "    %DEFAULT:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -366,22 +366,22 @@ TEST(multiple_switch_statement, multiple_case_default)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "    %DEFAULT:\n"
         "        im fine, thank you!\n"
         "    %END\n"
         "%END\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -402,8 +402,8 @@ TEST(surrounded_switch_statement, single_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<1>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(1)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
@@ -422,11 +422,11 @@ TEST(surrounded_switch_statement, multiple_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"
@@ -445,8 +445,8 @@ TEST(surrounded_switch_statement, single_case_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -468,11 +468,11 @@ TEST(surrounded_switch_statement, multiple_case_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -494,14 +494,14 @@ TEST(surrounded_multiple_switch_statement, single_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<1>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(1)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
         "hello!\n"
-        "%SWITCH [<1>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(1)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "%END\n"
@@ -520,20 +520,20 @@ TEST(surrounded_multiple_switch_statement, multiple_case_no_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "%END\n"
@@ -552,8 +552,8 @@ TEST(surrounded_multiple_switch_statement, single_case_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -561,8 +561,8 @@ TEST(surrounded_multiple_switch_statement, single_case_default)
         "    %END\n"
         "%END\n"
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -584,11 +584,11 @@ TEST(surrounded_multiple_switch_statement, multiple_case_default)
 
     auto static constexpr source =
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "    %DEFAULT:\n"
@@ -596,11 +596,11 @@ TEST(surrounded_multiple_switch_statement, multiple_case_default)
         "    %END\n"
         "%END\n"
         "hello!\n"
-        "%SWITCH [<2>]:\n"
-        "    %CASE [<1>]:\n"
+        "%SWITCH [(2)]:\n"
+        "    %CASE [(1)]:\n"
         "        hello!\n"
         "    %END\n"
-        "    %CASE [<2>]:\n"
+        "    %CASE [(2)]:\n"
         "        how are you?\n"
         "    %END\n"
         "    %DEFAULT:\n"

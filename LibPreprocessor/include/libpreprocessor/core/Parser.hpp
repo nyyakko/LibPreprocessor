@@ -47,7 +47,7 @@ public:
     liberror::ErrorOr<std::unique_ptr<INode>> parse(Context const& context);
 
     bool eof() const noexcept { return tokens_m.empty(); }
-    Token const& peek() { return tokens_m.top(); }
+    Token const& peek() const { return tokens_m.top(); }
     Token take() { auto value = tokens_m.top(); tokens_m.pop(); return value; }
     std::stack<Token>& tokens() noexcept { return tokens_m; }
 

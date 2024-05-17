@@ -36,7 +36,7 @@ TEST(print_statement, simple)
 
     libpreprocessor::PreprocessorContext context {};
 
-    auto static constexpr source = "%PRINT [<hello!>]\n"sv;
+    auto static constexpr source = "%PRINT [(hello!)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -58,7 +58,7 @@ TEST(print_statement, single_string_interpolation)
         }
     };
 
-    auto static constexpr source = "%PRINT [<<ENV:TEST>>]\n"sv;
+    auto static constexpr source = "%PRINT [(<ENV:TEST>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -80,7 +80,7 @@ TEST(print_statement, normal_with_single_string_interpolation)
         }
     };
 
-    auto static constexpr source = "%PRINT [<TEST: <ENV:TEST>>]\n"sv;
+    auto static constexpr source = "%PRINT [(TEST: <ENV:TEST>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -102,7 +102,7 @@ TEST(print_statement, single_string_interpolation_ignore)
         }
     };
 
-    auto static constexpr source = "%PRINT [<<<ENV:TEST>>>]\n"sv;
+    auto static constexpr source = "%PRINT [(<<ENV:TEST>>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -124,7 +124,7 @@ TEST(print_statement, normal_with_single_string_interpolation_ignored)
         }
     };
 
-    auto static constexpr source = "%PRINT [<TEST: <<ENV:TEST>>>]\n"sv;
+    auto static constexpr source = "%PRINT [(TEST: <<ENV:TEST>>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -146,7 +146,7 @@ TEST(print_statement, multiple_interpolated_string)
         }
     };
 
-    auto static constexpr source = "%PRINT [<<ENV:TEST> is <ENV:TEST>>]\n"sv;
+    auto static constexpr source = "%PRINT [(<ENV:TEST> is <ENV:TEST>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -168,7 +168,7 @@ TEST(print_statement, multiple_interpolated_string_with_one_ignored)
         }
     };
 
-    auto static constexpr source = "%PRINT [<<<ENV:TEST>> is <ENV:TEST>>]\n"sv;
+    auto static constexpr source = "%PRINT [(<<ENV:TEST>> is <ENV:TEST>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
@@ -190,7 +190,7 @@ TEST(print_statement, multiple_interpolated_string_with_all_ignored)
         }
     };
 
-    auto static constexpr source = "%PRINT [<<<ENV:TEST>> is <<ENV:TEST>>>]\n"sv;
+    auto static constexpr source = "%PRINT [(<<ENV:TEST>> is <<ENV:TEST>>)]\n"sv;
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);

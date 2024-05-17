@@ -13,7 +13,7 @@ using namespace liberror;
 ErrorOr<std::string> preprocess(std::string_view source, PreprocessorContext const& context)
 {
     Lexer lexer { source };
-    Parser parser { TRY(lexer.tokenize()) };
+    Parser parser { lexer.tokenize() };
     return interpret(TRY(parser.parse()), context);
 }
 
