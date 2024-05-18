@@ -15,8 +15,8 @@ struct Token
 
         PERCENT,
         LEFT_SQUARE_BRACKET,
-        LEFT_ROUND_BRACKET,
-        RIGHT_ROUND_BRACKET,
+        LEFT_ANGLE_BRACKET,
+        RIGHT_ANGLE_BRACKET,
         RIGHT_SQUARE_BRACKET,
         COLON,
 
@@ -57,8 +57,8 @@ constexpr char const* Token::type_as_string() const noexcept
 
     case Type::PERCENT: return "Token::Type::PERCENT";
     case Type::LEFT_SQUARE_BRACKET: return "Token::Type::LEFT_SQUARE_BRACKET";
-    case Type::LEFT_ROUND_BRACKET: return "Token::Type::LEFT_ROUND_BRACKET";
-    case Type::RIGHT_ROUND_BRACKET: return "Token::Type::RIGHT_ROUND_BRACKET";
+    case Type::LEFT_ANGLE_BRACKET: return "Token::Type::LEFT_ANGLE_BRACKET";
+    case Type::RIGHT_ANGLE_BRACKET: return "Token::Type::RIGHT_ANGLE_BRACKET";
     case Type::RIGHT_SQUARE_BRACKET: return "Token::Type::RIGHT_SQUARE_BRACKET";
     case Type::COLON: return "Token::Type::COLON";
 
@@ -77,8 +77,8 @@ constexpr char const* Token::type_as_string() const noexcept
 constexpr bool is_percent(Token const& token) { return token.type == Token::Type::PERCENT; }
 constexpr bool is_left_square_bracket(Token const& token) { return token.type == Token::Type::LEFT_SQUARE_BRACKET; }
 constexpr bool is_right_square_bracket(Token const& token) { return token.type == Token::Type::RIGHT_SQUARE_BRACKET; }
-constexpr bool is_left_round_bracket(Token const& token) { return token.type == Token::Type::LEFT_ROUND_BRACKET; }
-constexpr bool is_right_round_bracket(Token const& token) { return token.type == Token::Type::RIGHT_ROUND_BRACKET; }
+constexpr bool is_left_angle_bracket(Token const& token) { return token.type == Token::Type::LEFT_ANGLE_BRACKET; }
+constexpr bool is_right_angle_bracket(Token const& token) { return token.type == Token::Type::RIGHT_ANGLE_BRACKET; }
 constexpr bool is_colon(Token const& token) { return token.type == Token::Type::COLON; }
 constexpr bool is_identifier(Token const& token) { return token.type == Token::Type::IDENTIFIER; }
 constexpr bool is_literal(Token const& token) { return token.type == Token::Type::LITERAL; }

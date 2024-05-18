@@ -4,7 +4,6 @@
 
 #include <fmt/format.h>
 
-#include <algorithm>
 #include <sstream>
 
 namespace libpreprocessor {
@@ -12,64 +11,61 @@ namespace libpreprocessor {
 using namespace liberror;
 using namespace std::literals;
 
+#define ERROR(fmt, ...) make_error(PREFIX_ERROR ": " fmt __VA_OPT__(,) __VA_ARGS__)
+
 namespace detail {
 
 static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context);
 
 namespace {
 
-std::string unquoted(std::string_view string)
+ErrorOr<size_t> decay_to_integer(std::string_view literal)
 {
-    auto const isQuoted = string.starts_with("\"") && string.ends_with("\"");
-    return std::string(isQuoted ? string.substr(1, string.size() - 2) : string);
-}
-
-ErrorOr<size_t> decay_to_integer_literal(std::string_view literal)
-{
-    if (literal.empty()) return make_error(PREFIX_ERROR": Cannot decay an empty literal.");
+    if (literal.empty()) return ERROR("Cannot decay an empty literal.");
     std::stringstream stream {};
     stream << literal;
     size_t value {};
     stream >> value;
-    if (stream.fail()) return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a integer.", literal);
+    if (stream.fail()) return ERROR("Couldn't decay literal \"{}\" to a integer.", literal);
     return value;
 }
 
-ErrorOr<bool> decay_to_boolean_literal(std::string_view literal)
+ErrorOr<bool> decay_to_boolean(std::string_view literal)
 {
-    if (literal.empty()) return make_error(PREFIX_ERROR": Cannot decay an empty literal.");
+    if (literal.empty()) return ERROR("Cannot decay an empty literal.");
     if (literal == "TRUE") return true;
     if (literal == "FALSE") return false;
 
-    auto const result = decay_to_integer_literal(literal);
+    auto const result = decay_to_integer(literal);
     if (!result.has_value())
-        return make_error(PREFIX_ERROR": Couldn't decay literal \"{}\" to a boolean.", literal);
+        return ERROR("Couldn't decay literal \"{}\" to a boolean.", literal);
 
     return static_cast<bool>(result.value());
 }
 
 ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorContext const& context)
 {
-    if (string.empty()) return make_error(PREFIX_ERROR": Tried to interpolate an empty string.");
+    if (string.empty()) return ERROR("Tried to interpolate an empty string.");
+    if (!string.contains("|")) return string.data();
 
     ErrorOr<std::string> result {};
 
     for (auto index = 0zu; index < string.size(); index += 1)
     {
-        if (string.at(index) == '<')
+        if (string.at(index) == '|')
         {
             auto const [_, value] = [] (this auto self, auto const& context, auto const& string, auto& index) -> std::pair<std::string, std::string> {
                 std::string result {};
 
                 index += 1;
-                while (string.at(index) != '>')
+                while (string.at(index) != '|')
                 {
-                    if (string.at(index) == '<') result  = self(context, string, index).first;
+                    if (string.at(index) == '|') result  = self(context, string, index).first;
                     else                         result += string.at(index++);
                 }
                 index += 1;
 
-                auto const originalValue = fmt::format("<{}>", result);
+                auto const originalValue = fmt::format("|{}|", result);
                 auto const replacedValue =
                     context.environmentVariables.contains(result)
                         ? context.environmentVariables.at(result)
@@ -88,8 +84,6 @@ ErrorOr<std::string> interpolate_literal(std::string_view string, PreprocessorCo
         }
     }
 
-    if (context.environmentVariables.contains(*result)) return context.environmentVariables.at(*result);
-
     return result;
 }
 
@@ -99,36 +93,28 @@ ErrorOr<std::string> evaluate_unary_operator_expression(OperatorNode const* oper
 {
     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
         auto value = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
-        if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
         return interpolate_literal(value, context);
     }());
 
-    static constexpr auto operators = { "NOT" };
+    if (operatorNode->name == "NOT") return TRY(decay_to_boolean(lhs)) ? "FALSE"s : "TRUE"s;
 
-    if (std::ranges::find(operators, operatorNode->name) != operators.end())
-    {
-        return TRY(decay_to_boolean_literal(lhs)) ? "FALSE"s : "TRUE"s;
-    }
-
-    return make_error(PREFIX_ERROR": Unknown unary operator \"{}\" was reached.", operatorNode->name);
+    return ERROR("Unknown unary operator \"{}\" was reached.", operatorNode->name);
 }
 
 ErrorOr<std::string> evaluate_binary_operator_expression(OperatorNode const* operatorNode, PreprocessorContext const& context)
 {
     if (!operatorNode->rhs)
     {
-        return make_error(PREFIX_ERROR": Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
+        return ERROR("Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
     }
 
     auto const lhs = TRY([&] -> liberror::ErrorOr<std::string> {
         auto value = static_cast<LiteralNode*>(operatorNode->lhs.get())->value;
-        if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
         return interpolate_literal(value, context);
     }());
 
     auto const rhs = TRY([&] -> liberror::ErrorOr<std::string> {
         auto value = static_cast<LiteralNode*>(operatorNode->rhs.get())->value;
-        if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
         return interpolate_literal(value, context);
     }());
 
@@ -137,24 +123,24 @@ ErrorOr<std::string> evaluate_binary_operator_expression(OperatorNode const* ope
     if (operatorNode->name == "AND")      return lhs == "TRUE" && rhs == "TRUE" ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "OR")       return lhs == "TRUE" || rhs == "TRUE" ? "TRUE"s : "FALSE"s;
 
-    return make_error(PREFIX_ERROR": Unknown binary operator \"{}\" was reached.", operatorNode->name);
+    return ERROR("Unknown binary operator \"{}\" was reached.", operatorNode->name);
 }
 
 ErrorOr<std::string> evaluate_operator_expression(ExpressionNode const* expressionNode, PreprocessorContext const& context)
 {
     auto* operatorNode = static_cast<OperatorNode*>(expressionNode->value.get());
 
-    if (operatorNode == nullptr) return make_error(PREFIX_ERROR": operatorNode was nullptr.");
-    if (!operatorNode->lhs) return make_error(PREFIX_ERROR": For any operator, it must have atleast one value for it to work on.");
+    if (operatorNode == nullptr) return ERROR("operatorNode was nullptr.");
+    if (!operatorNode->lhs) return ERROR("For any operator, it must have atleast one value for it to work on.");
 
-    if (operatorNode->lhs->type() == INode::Type::EXPRESSION)
+    if (is_expression(operatorNode->lhs))
     {
         auto lhs          = std::make_unique<LiteralNode>();
         lhs->value        = TRY(evaluate_expression(operatorNode->lhs, context));
         operatorNode->lhs = std::move(lhs);
     }
 
-    if (operatorNode->rhs && operatorNode->rhs->type() == INode::Type::EXPRESSION)
+    if (operatorNode->rhs && is_expression(operatorNode->rhs))
     {
         auto rhs          = std::make_unique<LiteralNode>();
         rhs->value        = TRY(evaluate_expression(operatorNode->rhs, context));
@@ -176,29 +162,23 @@ ErrorOr<std::string> evaluate_operator_expression(ExpressionNode const* expressi
     }
     }
 
-    return make_error(PREFIX_ERROR": Operator \"{}\" had an invalid arity.", operatorNode->name);
+    return ERROR("Operator \"{}\" had an invalid arity.", operatorNode->name);
 }
 
 ErrorOr<std::string> evaluate_literal_expression(ExpressionNode const* expressionNode, PreprocessorContext const& context)
 {
     auto const* literalNode = static_cast<LiteralNode const*>(expressionNode->value.get());
-    if (literalNode == nullptr) return make_error(PREFIX_ERROR": literalNode was nullptr.");
-
-    auto const value = literalNode->value;
-
-    if (value.starts_with("\"") && value.ends_with("\"")) return unquoted(value);
-    if (context.environmentVariables.contains(value)) return context.environmentVariables.at(value);
-
-    return interpolate_literal(value, context);
+    if (literalNode == nullptr) return ERROR("literalNode was nullptr.");
+    return interpolate_literal(literalNode->value, context);
 }
 
 ErrorOr<std::string> evaluate_expression(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
 {
-    if (!head) return make_error(PREFIX_ERROR": Head node was nullptr.");
+    if (!head) return ERROR("Head node was nullptr.");
 
     if (head->type() != INode::Type::EXPRESSION)
     {
-        return make_error(PREFIX_ERROR": Head node is expected to be of type \"INode::Type::EXPRESSION\", instead it was \"{}\".", head->type_as_string());
+        return ERROR("Head node is expected to be of type \"INode::Type::EXPRESSION\", instead it was \"{}\".", head->type_as_string());
     }
 
     auto const* expressionNode = static_cast<ExpressionNode const*>(head.get());
@@ -220,7 +200,7 @@ ErrorOr<std::string> evaluate_expression(std::unique_ptr<INode> const& head, Pre
 
     case INode::Type::START__:
     case INode::Type::END__: {
-        return make_error(PREFIX_ERROR": Unexpected node of type \"{}\" was reached.", expressionNode->type_as_string());
+        return ERROR("Unexpected node of type \"{}\" was reached.", expressionNode->type_as_string());
     }
     }
 
@@ -231,13 +211,10 @@ ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::st
 {
     auto const* node = static_cast<ConditionalStatementNode const*>(statementNode);
 
-    if (node->condition == nullptr) return make_error(PREFIX_ERROR": \"%IF\" statement condition was nullptr.");
-    if (node->condition->type() != INode::Type::EXPRESSION) return make_error(PREFIX_ERROR": \"%IF\" statement expects an \"INode::Type::EXPRESSION\" to evaluate, but instead got \"{}\".", node->condition->type_as_string());
+    if (node->condition == nullptr) return ERROR("\"%IF\" statement condition was nullptr.");
 
-    if (TRY(evaluate_expression(node->condition, context)) == "TRUE")
-        return traverse(node->branch.first, stream, context);
-    if (node->branch.second)
-        return traverse(node->branch.second, stream, context);
+    if (TRY(evaluate_expression(node->condition, context)) == "TRUE") return traverse(node->branch.first, stream, context);
+    if (node->branch.second) return traverse(node->branch.second, stream, context);
 
     return {};
 }
@@ -253,8 +230,7 @@ ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std
     {
         auto const* node = static_cast<SelectionStatementNode const*>(statementNode);
 
-        if (node->match == nullptr) return make_error(PREFIX_ERROR": \"%SWITCH\" statement match was nullptr.");
-        if (node->match->type() != INode::Type::EXPRESSION) return make_error(PREFIX_ERROR": %SWITCH statement expects an \"INode::Type::EXPRESSION\" to evaluate, but instead got \"{}\".", node->match->type_as_string());
+        if (node->match == nullptr) return ERROR("\"%SWITCH\" statement match was nullptr.");
 
         auto const match = TRY(evaluate_expression(node->match, context));
         bool hasHandledNormalCase = false;
@@ -263,14 +239,10 @@ ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std
         {
             auto const* innerNode = static_cast<SelectionMatchStatementNode const*>(subnode.get());
 
-            if (innerNode == nullptr)
-                return make_error(PREFIX_ERROR": \"%CASE\" statement was nulllptr.");
-            if (innerNode->match == nullptr)
-                return make_error(PREFIX_ERROR": \"%CASE\" statement match was nullptr.");
-            if (innerNode->match->type() != INode::Type::EXPRESSION)
-                return make_error(PREFIX_ERROR": \"%CASE\" statement expects an \"INode::Type::EXPRESSION\" to evaluate, but instead got \"{}\".", innerNode->match->type_as_string());
+            if (innerNode == nullptr) return ERROR("\"%CASE\" statement was nulllptr.");
+            if (innerNode->match == nullptr) return ERROR("\"%CASE\" statement match was nullptr.");
 
-            if (unquoted(TRY(evaluate_expression(innerNode->match, context))) == match)
+            if (TRY(evaluate_expression(innerNode->match, context)) == match)
             {
                 TRY(traverse(subnode, stream, context));
                 hasHandledNormalCase = true;
@@ -291,12 +263,7 @@ ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std
 ErrorOr<void> traverse_print_statement(IStatementNode const* statementNode, PreprocessorContext const& context)
 {
     auto const* node = static_cast<PrintStatementNode const*>(statementNode);
-
-    if (node->content == nullptr) return make_error(PREFIX_ERROR": \"%PRINT\" statement didn't had an \"INode::Type::EXPRESSION\".");
-    if (node->content->type() != INode::Type::EXPRESSION) return make_error(PREFIX_ERROR": %PRINT statement expects an \"INode::Type::EXPRESSION\" as argument, but instead got \"{}\".", node->content->type_as_string());
-
     fmt::println("{}", TRY(evaluate_expression(node->content, context)));
-
     return {};
 }
 
@@ -323,7 +290,7 @@ ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::string
     case IStatementNode::Type::START__:
     case IStatementNode::Type::END__:
     default: {
-        return make_error(PREFIX_ERROR": Unexpected statement node of type \"{}\" was reached.", node->type_as_string());
+        return ERROR("Unexpected statement node of type \"{}\" was reached.", node->type_as_string());
     }
     }
 
@@ -347,7 +314,7 @@ ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringst
 
 static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
 {
-    if (!head) return make_error(PREFIX_ERROR": Head node was nullptr.");
+    if (!head) return ERROR("Head node was nullptr.");
 
     switch (head->type())
     {
@@ -371,7 +338,7 @@ static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstr
     case INode::Type::START__:
     case INode::Type::END__:
     default: {
-        return make_error(PREFIX_ERROR": Unexpected node of type \"{}\" was reached.", head->type_as_string());
+        return ERROR("Unexpected node of type \"{}\" was reached.", head->type_as_string());
     }
     }
 

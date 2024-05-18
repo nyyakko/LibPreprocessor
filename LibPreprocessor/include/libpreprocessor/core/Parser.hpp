@@ -39,20 +39,20 @@ public:
     {
         for (auto&& token : tokens | std::views::reverse)
         {
-            tokens_m.push(std::move(token));
+            _tokens.push(std::move(token));
         }
     }
 
     liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse({}); }
     liberror::ErrorOr<std::unique_ptr<INode>> parse(Context const& context);
 
-    bool eof() const noexcept { return tokens_m.empty(); }
-    Token const& peek() const { return tokens_m.top(); }
-    Token take() { auto value = tokens_m.top(); tokens_m.pop(); return value; }
-    std::stack<Token>& tokens() noexcept { return tokens_m; }
+    bool eof() const noexcept { return _tokens.empty(); }
+    Token const& peek() const { return _tokens.top(); }
+    Token take() { auto value = _tokens.top(); _tokens.pop(); return value; }
+    std::stack<Token>& tokens() noexcept { return _tokens; }
 
 private:
-    std::stack<Token> tokens_m {};
+    std::stack<Token> _tokens {};
 };
 
 constexpr char const* Parser::Context::who_is_as_string() const noexcept

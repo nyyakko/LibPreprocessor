@@ -9,7 +9,7 @@ TEST(true_if_statement_with_complex_expression, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [[[NOT (FALSE)] AND [NOT (TRUE)]] OR [(TRUE) AND [NOT (FALSE)]]]:\n"
+        "%IF [[[NOT <FALSE>] AND [NOT <TRUE>]] OR [<TRUE> AND [NOT <FALSE>]]]:\n"
         "    hello!\n"
         "%END\n"sv;
 
@@ -29,7 +29,7 @@ TEST(true_if_statement_with_complex_expression_using_the_preprocessor_context, s
     };
 
     auto static constexpr source =
-        "%IF [[[NOT (FALSE)] AND [NOT (TRUE)]] OR [(TRUE) AND [(ENV:TEST) EQUALS (TESTING)]]]:\n"
+        "%IF [[[NOT <FALSE>] AND [NOT <TRUE>]] OR [<TRUE> AND [<|ENV:TEST|> EQUALS <TESTING>]]]:\n"
         "    hello!\n"
         "%END\n"sv;
 
@@ -45,7 +45,7 @@ TEST(true_if_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%END\n"sv;
 
@@ -61,7 +61,7 @@ TEST(false_if_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%END\n"sv;
 
@@ -77,7 +77,7 @@ TEST(true_if_else_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -95,7 +95,7 @@ TEST(false_if_else_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -113,9 +113,9 @@ TEST(true_nested_if_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
-        "    %IF [(TRUE)]:\n"
+        "    %IF [<TRUE>]:\n"
         "        hello!\n"
         "    %END\n"
         "    hello!\n"
@@ -134,7 +134,7 @@ TEST(surrounded_true_if_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"sv;
@@ -152,7 +152,7 @@ TEST(surrounded_false_if_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"sv;
@@ -170,7 +170,7 @@ TEST(surrounded_true_if_else_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -190,7 +190,7 @@ TEST(surrounded_false_if_else_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -210,9 +210,9 @@ TEST(surrounded_true_nested_if_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
-        "    %IF [(TRUE)]:\n"
+        "    %IF [<TRUE>]:\n"
         "        hello!\n"
         "    %END\n"
         "    hello!\n"
@@ -231,10 +231,10 @@ TEST(multiple_true_if_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%END\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%END\n"sv ;
 
@@ -250,10 +250,10 @@ TEST(multiple_false_if_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%END\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%END\n"sv;
 
@@ -269,12 +269,12 @@ TEST(multiple_true_if_else_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
         "%END\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -293,12 +293,12 @@ TEST(multiple_false_if_else_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
         "%END\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -316,16 +316,16 @@ TEST(multiple_true_nested_if_statement, single)
     libpreprocessor::PreprocessorContext context {};
 
     auto static constexpr source =
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
-        "    %IF [(TRUE)]:\n"
+        "    %IF [<TRUE>]:\n"
         "        hello!\n"
         "    %END\n"
         "    hello!\n"
         "%END\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
-        "    %IF [(TRUE)]:\n"
+        "    %IF [<TRUE>]:\n"
         "        hello!\n"
         "    %END\n"
         "    hello!\n"
@@ -344,11 +344,11 @@ TEST(surrounded_multiple_true_if_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"sv;
@@ -366,11 +366,11 @@ TEST(surrounded_multiple_false_if_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"sv;
@@ -388,13 +388,13 @@ TEST(surrounded_multiple_true_if_else_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
         "%END\n"
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -414,13 +414,13 @@ TEST(surrounded_multiple_false_if_else_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
         "%END\n"
         "hello!\n"
-        "%IF [(FALSE)]:\n"
+        "%IF [<FALSE>]:\n"
         "    hello!\n"
         "%ELSE:\n"
         "    how are you?\n"
@@ -440,17 +440,17 @@ TEST(surrounded_multiple_true_nested_if_statement, single)
 
     auto static constexpr source =
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
-        "    %IF [(TRUE)]:\n"
+        "    %IF [<TRUE>]:\n"
         "        hello!\n"
         "    %END\n"
         "    hello!\n"
         "%END\n"
         "hello!\n"
-        "%IF [(TRUE)]:\n"
+        "%IF [<TRUE>]:\n"
         "    hello!\n"
-        "    %IF [(TRUE)]:\n"
+        "    %IF [<TRUE>]:\n"
         "        hello!\n"
         "    %END\n"
         "    hello!\n"
@@ -461,4 +461,3 @@ TEST(surrounded_multiple_true_nested_if_statement, single)
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n    hello!\n        hello!\n    hello!\nhello!\n    hello!\n        hello!\n    hello!\nhello!\n");
 }
-

@@ -20,7 +20,7 @@ static std::string read_file_contents(std::filesystem::path file);
 
 static constexpr std::string_view unknown_file_location_g = "Local/Global Variable";
 
-static constexpr std::array special_g  { '%', '[', '(', ')', ']', ':', ' ' };
+static constexpr std::array special_g  { '%', '[', '<', '>', ']', ':', ' ' };
 static constexpr std::array keyword_g  { "IF", "END", "ELSE", "SWITCH", "CASE", "DEFAULT", "PRINT" };
 static constexpr std::array operator_g { "AND", "OR", "NOT", "EQUALS", "CONTAINS" };
 
@@ -82,8 +82,8 @@ std::optional<Token> Lexer::next_special()
     {
     case '%': token->type = Token::Type::PERCENT; break;
     case '[': token->type = Token::Type::LEFT_SQUARE_BRACKET; break;
-    case '(': token->type = Token::Type::LEFT_ROUND_BRACKET; break;
-    case ')': token->type = Token::Type::RIGHT_ROUND_BRACKET; break;
+    case '<': token->type = Token::Type::LEFT_ANGLE_BRACKET; break;
+    case '>': token->type = Token::Type::RIGHT_ANGLE_BRACKET; break;
     case ']': token->type = Token::Type::RIGHT_SQUARE_BRACKET; break;
     case ':': token->type = Token::Type::COLON; break;
     }
@@ -113,11 +113,11 @@ std::optional<Token> Lexer::next_keyword()
 
 std::optional<Token> Lexer::next_identifier()
 {
-    if (_tokens.empty() || _tokens.back().type != Token::Type::LEFT_ROUND_BRACKET) return std::nullopt;
+    if (_tokens.empty() || _tokens.back().type != Token::Type::LEFT_ANGLE_BRACKET) return std::nullopt;
 
     std::optional<Token> token { Token {} };
 
-    while (!eof() && MUST(peek()) != ')' && MUST(peek()) != ']')
+    while (!eof() && MUST(peek()) != '>' && MUST(peek()) != ']')
     {
         token->data += MUST(take());
     }
@@ -155,11 +155,11 @@ std::optional<Token> Lexer::next_operator()
 
 std::optional<Token> Lexer::next_literal()
 {
-    if (_tokens.empty() || _tokens.back().type != Token::Type::LEFT_ROUND_BRACKET) return std::nullopt;
+    if (_tokens.empty() || _tokens.back().type != Token::Type::LEFT_ANGLE_BRACKET) return std::nullopt;
 
     std::optional<Token> token { Token {} };
 
-    while (!eof() && MUST(peek()) != ')' && MUST(peek()) != ']')
+    while (!eof() && MUST(peek()) != '>' && MUST(peek()) != ']')
     {
         token->data += MUST(take());
     }

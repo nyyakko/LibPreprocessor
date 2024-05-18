@@ -9,30 +9,33 @@ namespace libpreprocessor {
 
 using namespace liberror;
 
+#define ERROR(fmt, ...) make_error(PREFIX_ERROR ": " fmt __VA_OPT__(,) __VA_ARGS__)
+
 namespace internal {
 
 static ErrorOr<void> context_identify(Parser::Context const& context, Token const& token);
-static ErrorOr<void> context_requires_ending_colon(Parser::Context const& context, Token const& token);
+static ErrorOr<void> context_requires_trailing_colon(Parser::Context const& context, Token const& token);
 
 }
 
+static constexpr std::array unaryOperators_g  { "NOT" };
+static constexpr std::array binaryOperators_g { "AND", "OR", "EQUALS", "CONTAINS" };
+
 namespace {
 
-ErrorOr<std::unique_ptr<INode>> parse_operator_node(Parser& parser, Parser::Context const& context, Token const& token, std::unique_ptr<INode>& root)
+ErrorOr<std::unique_ptr<INode>> parse_operator_node(Parser& parser, Parser::Context const& context, Token const& token, std::unique_ptr<INode>& node)
 {
     auto operatorNode   = std::make_unique<OperatorNode>();
     operatorNode->name  = token.data;
     operatorNode->arity = [&] {
-        static constexpr auto unaryOperators  = { "NOT" };
-        static constexpr auto binaryOperators = { "AND", "OR", "EQUALS", "CONTAINS" };
-        if (std::ranges::find(unaryOperators, operatorNode->name) != unaryOperators.end()) return OperatorNode::Arity::UNARY;
-        if (std::ranges::find(binaryOperators, operatorNode->name) != binaryOperators.end()) return OperatorNode::Arity::BINARY;
+        if (std::ranges::find(unaryOperators_g, operatorNode->name) != unaryOperators_g.end()) return OperatorNode::Arity::UNARY;
+        if (std::ranges::find(binaryOperators_g, operatorNode->name) != binaryOperators_g.end()) return OperatorNode::Arity::BINARY;
         [[unlikely]];
         assert(false && "UNREACHABLE");
         return OperatorNode::Arity{};
     }();
 
-    if (root == nullptr)
+    if (node == nullptr)
     {
         operatorNode->lhs = TRY(parser.parse({ context.parent, context.child, context.whois }));
         if (operatorNode->arity == OperatorNode::Arity::BINARY)
@@ -40,16 +43,16 @@ ErrorOr<std::unique_ptr<INode>> parse_operator_node(Parser& parser, Parser::Cont
         return operatorNode;
     }
 
-    if (!(root->type() == INode::Type::EXPRESSION || root->type() == INode::Type::LITERAL))
-        return liberror::make_error(PREFIX_ERROR": {}: Unexpected token of type \"{}\" was processed.", token.location_as_string(), root->type_as_string());
+    if (!(is_expression(node) || is_literal(node)))
+        return ERROR("{}: Unexpected token of type \"{}\" was processed.", token.location_as_string(), node->type_as_string());
 
     if (operatorNode->arity == OperatorNode::Arity::BINARY)
         operatorNode->rhs = TRY(parser.parse({ context.parent, context.child + 1, context.whois }));
 
-    switch (root->type())
+    switch (node->type())
     {
-    case INode::Type::LITERAL:    operatorNode->lhs = std::move(root); break;
-    case INode::Type::EXPRESSION: operatorNode->lhs = std::move(static_cast<ExpressionNode*>(root.get())->value); break;
+    case INode::Type::LITERAL:    operatorNode->lhs = std::move(node); break;
+    case INode::Type::EXPRESSION: operatorNode->lhs = std::move(static_cast<ExpressionNode*>(node.get())->value); break;
     default: {
         assert(false && "UNREACHABLE");
     }
@@ -67,17 +70,16 @@ ErrorOr<std::unique_ptr<INode>> parse_if_statement_node(Parser& parser, Parser::
         auto conditionalStatement       = std::make_unique<ConditionalStatementNode>();
         conditionalStatement->condition = TRY(parser.parse({ context.parent, context.child, Parser::Context::Who::IF_STATEMENT }));
 
-        if (conditionalStatement->condition != nullptr && conditionalStatement->condition->type() != INode::Type::EXPRESSION)
-            return make_error(PREFIX_ERROR": {}: \"%IF\" statement expects an \"INode::Type::EXPRESSION\" to evaluate, but instead got \"{}\".", token.location_as_string(), conditionalStatement->condition->type_as_string());
-
         if (conditionalStatement->condition == nullptr)
-            return make_error(PREFIX_ERROR": {}: An \"%IF\" statement didn't had a condition.", token.location_as_string());
+            return ERROR("{}: An \"%IF\" statement didn't had a condition.", token.location_as_string());
+        if (!is_expression(conditionalStatement->condition))
+            return ERROR("{}: \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), conditionalStatement->condition->type_as_string());
 
         conditionalStatement->branch.first  = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::IF_STATEMENT }));
         conditionalStatement->branch.second = TRY(parser.parse({ context.child, context.parent, Parser::Context::Who::IF_STATEMENT }));
 
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
-            return make_error(PREFIX_ERROR": {}: An \"%IF\" statement missing its \"%END\" was reached.", token.location_as_string());
+            return ERROR("{}: An \"%IF\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
@@ -100,20 +102,18 @@ ErrorOr<std::unique_ptr<INode>> parse_switch_statement_node(Parser& parser, Pars
         auto selectionStatement   = std::make_unique<SelectionStatementNode>();
         selectionStatement->match = TRY(parser.parse({ context.parent, context.child + 1, Parser::Context::Who::SWITCH_STATEMENT }));
 
-        if (selectionStatement->match != nullptr && selectionStatement->match->type() != INode::Type::EXPRESSION)
-            return make_error(PREFIX_ERROR": {}: \"%SWITCH\" statement expects an \"INode::Type::EXPRESSION\" to evaluate, but instead got \"{}\".", token.location_as_string(), selectionStatement->match->type_as_string());
-
+        if (selectionStatement->match != nullptr && !is_expression(selectionStatement->match))
+            return ERROR("{}: \"%SWITCH\" statement expects \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), selectionStatement->match->type_as_string());
         if (selectionStatement->match == nullptr)
-            return make_error(PREFIX_ERROR": {}: An \"%SWITCH\" statement didn't had a expression to match.", token.location_as_string());
+            return ERROR("{}: An \"%SWITCH\" statement didn't had a expression to match.", token.location_as_string());
 
         selectionStatement->branches.first  = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::SWITCH_STATEMENT }));
         selectionStatement->branches.second = TRY(parser.parse({ context.child, context.parent, Parser::Context::Who::SWITCH_STATEMENT }));
 
         if (!(selectionStatement->branches.first || selectionStatement->branches.second))
-            return make_error(PREFIX_ERROR": {}: An \"%SWITCH\" statement must have atleast a %DEFAULT case.", token.location_as_string());
-
+            return ERROR("{}: An \"%SWITCH\" statement must have atleast a %DEFAULT case.", token.location_as_string());
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
-            return make_error(PREFIX_ERROR": {}: An \"%SWITCH\" statement missing its \"%END\" was reached.", token.location_as_string());
+            return ERROR("{}: An \"%SWITCH\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
@@ -124,16 +124,15 @@ ErrorOr<std::unique_ptr<INode>> parse_switch_statement_node(Parser& parser, Pars
         auto selectionMatchStatement    = std::make_unique<SelectionMatchStatementNode>();
         selectionMatchStatement->match  = TRY(parser.parse({ context.parent, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
 
-        if (selectionMatchStatement->match != nullptr && selectionMatchStatement->match->type() != INode::Type::EXPRESSION)
-            return make_error(PREFIX_ERROR": {}: \"%CASE\" statement expects an \"INode::Type::EXPRESSION\" to evaluate, but instead got \"{}\".", token.location_as_string(), selectionMatchStatement->match->type_as_string());
-
         if (selectionMatchStatement->match == nullptr)
-            return make_error(PREFIX_ERROR": {}: An \"%CASE\" statement didn't had a expression to match.", token.location_as_string());
+            return ERROR("{}: An \"%CASE\" statement didn't had a expression to match.", token.location_as_string());
+        if (!is_expression(selectionMatchStatement->match))
+            return ERROR("{}: \"%CASE\" expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), selectionMatchStatement->match->type_as_string());
 
         selectionMatchStatement->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
 
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
-            return make_error(PREFIX_ERROR": {}: An \"%CASE\" statement missing its \"%END\" was reached.", token.location_as_string());
+            return ERROR("{}: An \"%CASE\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
@@ -141,19 +140,18 @@ ErrorOr<std::unique_ptr<INode>> parse_switch_statement_node(Parser& parser, Pars
     }
     else if (token.data == "DEFAULT")
     {
-        auto selectionMatchStatementNode   = std::make_unique<SelectionMatchStatementNode>();
-        selectionMatchStatementNode->match = [] {
+        auto selectionMatchStatementNode    = std::make_unique<SelectionMatchStatementNode>();
+        selectionMatchStatementNode->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
+        selectionMatchStatementNode->match  = [] {
             auto literalNode   = std::make_unique<LiteralNode>();
             literalNode->value = "DEFAULT";
             return literalNode;
         }();
-        selectionMatchStatementNode->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
 
         if (selectionMatchStatementNode->branch == nullptr)
-            return make_error(PREFIX_ERROR": {}: An \"%DEFAULT\" statement didn't had a body.", token.location_as_string());
-
+            return ERROR("{}: An \"%DEFAULT\" statement didn't had a body.", token.location_as_string());
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
-            return make_error(PREFIX_ERROR": {}: An \"%DEFAULT\" statement missing its \"%END\" was reached.", token.location_as_string());
+            return ERROR("{}: An \"%DEFAULT\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
@@ -163,19 +161,26 @@ ErrorOr<std::unique_ptr<INode>> parse_switch_statement_node(Parser& parser, Pars
     return statementNode;
 }
 
-ErrorOr<std::unique_ptr<INode>> parse_print_statement_node(Parser& parser, Parser::Context const& context)
+ErrorOr<std::unique_ptr<INode>> parse_print_statement_node(Parser& parser, Parser::Context const& context, Token const& token)
 {
-    auto printStatementNode = std::make_unique<PrintStatementNode>();
-    printStatementNode->content = TRY(parser.parse({ context.parent, context.child, Parser::Context::Who::PRINT_STATEMENT }));
-    return printStatementNode;
+    auto printStatement = std::make_unique<PrintStatementNode>();
+    printStatement->content = TRY(parser.parse({ context.parent, context.child, Parser::Context::Who::PRINT_STATEMENT }));
+
+    if (printStatement->content == nullptr)
+        return ERROR("{}: \"%PRINT\" statement didn't had a \"INode::Type::EXPRESSION\".", token.location_as_string());
+    if (!is_expression(printStatement->content))
+        return ERROR("{}: \"%PRINT\" expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), printStatement->content->type_as_string());
+
+    return printStatement;
 }
 
 ErrorOr<std::unique_ptr<INode>> parse_statement_node(Parser& parser, Parser::Context const& context, Token const& token)
 {
     if (token.data == "IF" || token.data == "ELSE") return parse_if_statement_node(parser, context, token);
     if (token.data == "SWITCH" || token.data == "CASE" || token.data == "DEFAULT") return parse_switch_statement_node(parser, context, token);
-    if (token.data == "PRINT") return parse_print_statement_node(parser, context);
-    return make_error(PREFIX_ERROR": {}: An unexpected keyword \"{}\" was reached.", token.location_as_string(), token.type_as_string());
+    if (token.data == "PRINT") return parse_print_statement_node(parser, context, token);
+
+    return ERROR("{}: An unexpected keyword \"{}\" was reached.", token.location_as_string(), token.type_as_string());
 }
 
 }
@@ -192,7 +197,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
         {
         case Token::Type::PERCENT: {
             if (!is_keyword(peek()))
-                return make_error(PREFIX_ERROR": {}: Expected \"Token::Type::KEYWORD\" after \"%\", but found \"{}\" instead.", peek().location_as_string(), token.type_as_string());
+                return ERROR("{}: Expected \"Token::Type::KEYWORD\" after \"%\", but found \"{}\" instead.", peek().location_as_string(), token.type_as_string());
 
             auto const peekedEndToken = peek().data == "END";
             auto const peekedElseOrDefault = context.child > context.parent && (peek().data == "ELSE" || peek().data == "DEFAULT");
@@ -218,9 +223,9 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
             root                  = std::move(expressionNode);
 
             if (eof())
-                return make_error(PREFIX_ERROR": {}: Expected \"]\", but found \"EOF\" instead.", token.location_as_string());
-            if (peek().type != Token::Type::OPERATOR && !is_right_square_bracket(peek()))
-                return make_error(PREFIX_ERROR": {}: Expected \"]\", but found \"{}\" instead.", peek().location_as_string(), peek().type_as_string());
+                return ERROR("{}: Expected \"]\", but found \"EOF\" instead.", token.location_as_string());
+            if (!is_operator(peek()) && !is_right_square_bracket(peek()))
+                return ERROR("{}: Expected \"]\", but found \"{}\" instead.", peek().location_as_string(), peek().type_as_string());
 
             break;
         }
@@ -229,13 +234,13 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 
             if (!eof() && !is_operator(peek()))
             {
-                TRY(internal::context_requires_ending_colon(context, peek()));
+                TRY(internal::context_requires_trailing_colon(context, peek()));
                 return root;
             }
 
             break;
         }
-        case Token::Type::LEFT_ROUND_BRACKET: {
+        case Token::Type::LEFT_ANGLE_BRACKET: {
             TRY(internal::context_identify(context, token));
 
             auto literalNode   = std::make_unique<LiteralNode>();
@@ -243,13 +248,13 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
             root               = std::move(literalNode);
 
             if (eof())
-                return make_error(PREFIX_ERROR": {}: Expected \")\", but found \"EOF\" instead.", token.location_as_string());
-            if (!is_right_round_bracket(peek()))
-                return make_error(PREFIX_ERROR": {}: Expected \")\", but found \"{}\" instead.", peek().location_as_string(), peek().type_as_string());
+                return ERROR("{}: Expected \">\", but found \"EOF\" instead.", token.location_as_string());
+            if (!is_right_angle_bracket(peek()))
+                return ERROR("{}: Expected \">\", but found \"{}\" instead.", peek().location_as_string(), peek().type_as_string());
 
             break;
         }
-        case Token::Type::RIGHT_ROUND_BRACKET: {
+        case Token::Type::RIGHT_ANGLE_BRACKET: {
             TRY(internal::context_identify(context, token));
             if (!eof() && !is_operator(peek())) return root;
             break;
@@ -279,7 +284,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 
         case Token::Type::BEGIN__:
         case Token::Type::END__: {
-            return make_error(PREFIX_ERROR": {}: Unexpected token of kind \"{}\" was reached.", token.location_as_string(), token.type_as_string());
+            return ERROR("{}: Unexpected token of kind \"{}\" was reached.", token.location_as_string(), token.type_as_string());
         }
         }
     }
@@ -295,11 +300,11 @@ static ErrorOr<void> context_identify(Parser::Context const& context, Token cons
 {
     if (context.whois == Parser::Context::Who::BEGIN__ ||
         context.whois == Parser::Context::Who::END__)
-        return make_error(PREFIX_ERROR": {}: A stray token of type \"{}\" was reached.", token.location_as_string(), token.type_as_string());
+        return ERROR("{}: A stray token of type \"{}\" was reached.", token.location_as_string(), token.type_as_string());
     return {};
 }
 
-static ErrorOr<void> context_requires_ending_colon(Parser::Context const& context, Token const& token)
+static ErrorOr<void> context_requires_trailing_colon(Parser::Context const& context, Token const& token)
 {
     switch (context.whois)
     {
@@ -308,7 +313,7 @@ static ErrorOr<void> context_requires_ending_colon(Parser::Context const& contex
     case Parser::Context::Who::SWITCH_STATEMENT:
     case Parser::Context::Who::CASE_STATEMENT: {
         if (!is_colon(token))
-            return make_error(PREFIX_ERROR": {}: Expected \":\", but found \"{}\" instead.", token.location_as_string(), token.type_as_string());
+            return ERROR("{}: Expected \":\", but found \"{}\" instead.", token.location_as_string(), token.type_as_string());
         break;
     }
 
@@ -319,7 +324,7 @@ static ErrorOr<void> context_requires_ending_colon(Parser::Context const& contex
 
     case Parser::Context::Who::BEGIN__:
     case Parser::Context::Who::END__: {
-        return make_error(PREFIX_ERROR": Context::whois had an invalid value.");
+        return ERROR("Context::whois had an invalid value.");
     }
     }
 
