@@ -18,11 +18,10 @@ static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstr
 
 namespace {
 
-std::string unquoted(std::string const& string)
+std::string unquoted(std::string_view string)
 {
-    return string.starts_with("\"") && string.ends_with("\"")
-                ? string.substr(1, string.size() - 2)
-                : string;
+    auto const isQuoted = string.starts_with("\"") && string.ends_with("\"");
+    return std::string(isQuoted ? string.substr(1, string.size() - 2) : string);
 }
 
 ErrorOr<size_t> decay_to_integer_literal(std::string_view literal)
