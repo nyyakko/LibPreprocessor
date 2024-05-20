@@ -35,28 +35,29 @@ ErrorOr<std::unique_ptr<INode>> parse_operator_node(Parser& parser, Parser::Cont
         return OperatorNode::Arity{};
     }();
 
+    auto fnAsExpression = [] (std::unique_ptr<INode> node) -> std::unique_ptr<INode> {
+        if (is_expression(node)) return node;
+        auto expression   = std::make_unique<ExpressionNode>();
+        expression->value = std::move(node);
+        return expression;
+    };
+
     if (node == nullptr)
     {
-        operatorNode->lhs = TRY(parser.parse({ context.parent, context.child, context.whois }));
-        if (operatorNode->arity == OperatorNode::Arity::BINARY)
-            operatorNode->rhs = TRY(parser.parse({ context.parent, context.child + 1, context.whois }));
-        return operatorNode;
+        operatorNode->lhs = fnAsExpression(TRY(parser.parse({ context.parent, context.child, context.whois })));
     }
+    else switch (node->type())
+    {
+    case INode::Type::LITERAL:    operatorNode->lhs = fnAsExpression(std::move(node)); break;
+    case INode::Type::EXPRESSION: operatorNode->lhs = std::move(node); break;
 
-    if (!(is_expression(node) || is_literal(node)))
+    default: {
         return ERROR("{}: Unexpected token of type \"{}\" was processed.", token.location_as_string(), node->type_as_string());
+    }
+    }
 
     if (operatorNode->arity == OperatorNode::Arity::BINARY)
-        operatorNode->rhs = TRY(parser.parse({ context.parent, context.child + 1, context.whois }));
-
-    switch (node->type())
-    {
-    case INode::Type::LITERAL:    operatorNode->lhs = std::move(node); break;
-    case INode::Type::EXPRESSION: operatorNode->lhs = std::move(static_cast<ExpressionNode*>(node.get())->value); break;
-    default: {
-        assert(false && "UNREACHABLE");
-    }
-    }
+        operatorNode->rhs = fnAsExpression(TRY(parser.parse({ context.parent, context.child + 1, context.whois })));
 
     return operatorNode;
 }

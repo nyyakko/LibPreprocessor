@@ -28,6 +28,7 @@ TEST(true_if_statement_with_complex_expression_using_the_preprocessor_context, s
         }
     };
 
+    {
     auto static constexpr source =
         "%IF [[[NOT <FALSE>] AND [NOT <TRUE>]] OR [<TRUE> AND [<|ENV:TEST|> EQUALS <TESTING>]]]:\n"
         "    hello!\n"
@@ -36,6 +37,17 @@ TEST(true_if_statement_with_complex_expression_using_the_preprocessor_context, s
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "    hello!\n");
+    }
+    {
+    auto static constexpr source =
+        "%IF [[<|ENV:TEST|> EQUALS <TESTING>] OR <FALSE>]:\n"
+        "    hello!\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(!result.has_value(), false);
+    EXPECT_STREQ(result.value().data(), "    hello!\n");
+    }
 }
 
 TEST(true_if_statement, single_justified)
@@ -489,3 +501,4 @@ TEST(surrounded_multiple_true_nested_if_statement, single)
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n    hello!\n        hello!\n    hello!\nhello!\n    hello!\n        hello!\n    hello!\nhello!\n");
 }
+
