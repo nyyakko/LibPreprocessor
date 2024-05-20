@@ -55,6 +55,8 @@ private:
     std::stack<Token> _tokens {};
 };
 
+#define LIBPREPROCESSOR_STRINGIFY(x) #x
+
 constexpr char const* Parser::Context::who_is_as_string() const noexcept
 {
     switch (whois)

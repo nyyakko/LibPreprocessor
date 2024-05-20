@@ -60,17 +60,17 @@ private:
     using INode::nodes;
 };
 
-struct BodyNode : INode
+struct ScopeNode : INode
 {
-    NODE_TYPE(INode::Type::BODY);
-    virtual ~BodyNode() override = default;
+    NODE_TYPE(INode::Type::SCOPE);
+    virtual ~ScopeNode() override = default;
 };
 
-struct ConditionalStatementNode : IStatementNode
+struct IfStatementNode : IStatementNode
 {
-    STATEMENT_TYPE(IStatementNode::Type::CONDITIONAL);
+    STATEMENT_TYPE(IStatementNode::Type::IF);
 
-    virtual ~ConditionalStatementNode() override = default;
+    virtual ~IfStatementNode() override = default;
 
     std::unique_ptr<INode> condition {};
     std::pair<
@@ -81,11 +81,11 @@ private:
     using INode::nodes;
 };
 
-struct SelectionStatementNode : IStatementNode
+struct SwitchStatementNode : IStatementNode
 {
-    STATEMENT_TYPE(IStatementNode::Type::MATCH);
+    STATEMENT_TYPE(IStatementNode::Type::SWITCH);
 
-    virtual ~SelectionStatementNode() override = default;
+    virtual ~SwitchStatementNode() override = default;
 
     std::unique_ptr<INode> match {};
     std::pair<
@@ -96,11 +96,11 @@ private:
     using INode::nodes;
 };
 
-struct SelectionMatchStatementNode : IStatementNode
+struct SwitchCaseStatementNode : IStatementNode
 {
-    STATEMENT_TYPE(IStatementNode::Type::MATCH_CASE);
+    STATEMENT_TYPE(IStatementNode::Type::SWITCH_CASE);
 
-    virtual ~SelectionMatchStatementNode() override = default;
+    virtual ~SwitchCaseStatementNode() override = default;
 
     std::unique_ptr<INode> match {};
     std::unique_ptr<INode> branch {};

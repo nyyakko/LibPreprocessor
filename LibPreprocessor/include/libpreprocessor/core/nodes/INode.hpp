@@ -20,7 +20,7 @@ struct INode
         CONDITION,
         OPERATOR,
         LITERAL,
-        BODY,
+        SCOPE,
         END__
     };
 
@@ -38,6 +38,6 @@ constexpr bool is_content(std::unique_ptr<INode> const& node) { return node->typ
 constexpr bool is_condition(std::unique_ptr<INode> const& node) { return node->type() == INode::Type::CONDITION; }
 constexpr bool is_operator(std::unique_ptr<INode> const& node) { return node->type() == INode::Type::OPERATOR; }
 constexpr bool is_literal(std::unique_ptr<INode> const& node) { return node->type() == INode::Type::LITERAL; }
-constexpr bool is_body(std::unique_ptr<INode> const& node) { return node->type() == INode::Type::BODY; }
+constexpr bool is_scope(std::unique_ptr<INode> const& node) { return node->type() == INode::Type::SCOPE; }
 
 } // libpreprocessor

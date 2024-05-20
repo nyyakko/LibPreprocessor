@@ -40,7 +40,7 @@ ErrorOr<std::string> evaluate_unary_operator(OperatorNode const* operatorNode, P
 
 ErrorOr<std::string> evaluate_binary_operator(OperatorNode const* operatorNode, PreprocessorContext const& context)
 {
-    if (!operatorNode->rhs)
+    if (operatorNode->rhs == nullptr)
     {
         return ERROR("Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
     }
@@ -61,7 +61,7 @@ ErrorOr<std::string> evaluate_operator(ExpressionNode const* expressionNode, Pre
     auto* operatorNode = static_cast<OperatorNode*>(expressionNode->value.get());
 
     if (operatorNode == nullptr) return ERROR("operatorNode was nullptr.");
-    if (!operatorNode->lhs) return ERROR("For any operator, it must have atleast one value for it to work on.");
+    if (operatorNode->lhs == nullptr) return ERROR("For any operator, it must have atleast one value for it to work on.");
 
     switch (operatorNode->arity)
     {
@@ -90,7 +90,7 @@ ErrorOr<std::string> evaluate_literal(ExpressionNode const* expressionNode, Prep
 
 ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
 {
-    if (!head) return ERROR("Head node was nullptr.");
+    if (head == nullptr) return ERROR("Head node was nullptr.");
 
     if (!is_expression(head))
     {
@@ -115,7 +115,7 @@ ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorCo
 
 ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
 {
-    auto const* node = static_cast<ConditionalStatementNode const*>(statementNode);
+    auto const* node = static_cast<IfStatementNode const*>(statementNode);
 
     if (node->condition == nullptr) return ERROR("\"%IF\" statement condition was nullptr.");
 
@@ -127,14 +127,14 @@ ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::st
 
 ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
 {
-    if (statementNode->statement_type() == IStatementNode::Type::MATCH_CASE)
+    if (statementNode->statement_type() == IStatementNode::Type::SWITCH_CASE)
     {
-        auto const* node = static_cast<SelectionMatchStatementNode const*>(statementNode);
+        auto const* node = static_cast<SwitchCaseStatementNode const*>(statementNode);
         TRY(traverse(node->branch, stream, context));
     }
     else
     {
-        auto const* node = static_cast<SelectionStatementNode const*>(statementNode);
+        auto const* node = static_cast<SwitchStatementNode const*>(statementNode);
 
         if (node->match == nullptr) return ERROR("\"%SWITCH\" statement match was nullptr.");
 
@@ -143,7 +143,7 @@ ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std
 
         for (auto const& subnode : node->branches.first->nodes)
         {
-            auto const* innerNode = static_cast<SelectionMatchStatementNode const*>(subnode.get());
+            auto const* innerNode = static_cast<SwitchCaseStatementNode const*>(subnode.get());
 
             if (innerNode == nullptr) return ERROR("\"%CASE\" statement was nulllptr.");
             if (innerNode->match == nullptr) return ERROR("\"%CASE\" statement match was nullptr.");
@@ -158,7 +158,7 @@ ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std
 
         if (!hasHandledNormalCase && node->branches.second)
         {
-            auto const* innerNode = static_cast<SelectionMatchStatementNode const*>(node->branches.second.get());
+            auto const* innerNode = static_cast<SwitchCaseStatementNode const*>(node->branches.second.get());
             TRY(traverse(innerNode->branch, stream, context));
         }
     }
@@ -175,7 +175,7 @@ ErrorOr<void> traverse_print_statement(IStatementNode const* statementNode, Prep
 
 ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
 {
-    if (!head) return ERROR("Head node was nullptr.");
+    if (head == nullptr) return ERROR("Head node was nullptr.");
 
     if (!is_statement(head))
     {
@@ -186,12 +186,12 @@ ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::string
 
     switch (node->statement_type())
     {
-    case IStatementNode::Type::CONDITIONAL: {
+    case IStatementNode::Type::IF: {
         TRY(traverse_if_statement(node, stream, context));
         break;
     }
-    case IStatementNode::Type::MATCH:
-    case IStatementNode::Type::MATCH_CASE: {
+    case IStatementNode::Type::SWITCH:
+    case IStatementNode::Type::SWITCH_CASE: {
         TRY(traverse_switch_statement(node, stream, context));
         break;
     }
@@ -212,7 +212,7 @@ ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::string
 
 ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringstream& stream)
 {
-    if (!head) return ERROR("Head node was nullptr.");
+    if (head == nullptr) return ERROR("Head node was nullptr.");
 
     if (!is_content(head))
     {
@@ -234,7 +234,7 @@ ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringst
 
 static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
 {
-    if (!head) return ERROR("Head node was nullptr.");
+    if (head == nullptr) return ERROR("Head node was nullptr.");
 
     switch (head->type())
     {
@@ -246,7 +246,7 @@ static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstr
         TRY(traverse_content(head, stream));
         break;
     }
-    case INode::Type::BODY: {
+    case INode::Type::SCOPE: {
         break;
     }
 

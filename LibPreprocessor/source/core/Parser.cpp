@@ -70,23 +70,23 @@ ErrorOr<std::unique_ptr<INode>> parse_if_statement(Parser& parser, Parser::Conte
 
     if (token.data == "IF")
     {
-        auto conditionalNode       = std::make_unique<ConditionalStatementNode>();
-        conditionalNode->condition = TRY(parser.parse({ context.parent, context.child, Parser::Context::Who::IF_STATEMENT }));
+        auto ifStatementNode       = std::make_unique<IfStatementNode>();
+        ifStatementNode->condition = TRY(parser.parse({ context.parent, context.child, Parser::Context::Who::IF_STATEMENT }));
 
-        if (conditionalNode->condition == nullptr)
+        if (ifStatementNode->condition == nullptr)
             return ERROR("{}: An \"%IF\" statement didn't had a condition.", token.location_as_string());
-        if (!is_expression(conditionalNode->condition))
-            return ERROR("{}: \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), conditionalNode->condition->type_as_string());
+        if (!is_expression(ifStatementNode->condition))
+            return ERROR("{}: \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), ifStatementNode->condition->type_as_string());
 
-        conditionalNode->branch.first  = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::IF_STATEMENT }));
-        conditionalNode->branch.second = TRY(parser.parse({ context.child, context.parent, Parser::Context::Who::IF_STATEMENT }));
+        ifStatementNode->branch.first  = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::IF_STATEMENT }));
+        ifStatementNode->branch.second = TRY(parser.parse({ context.child, context.parent, Parser::Context::Who::IF_STATEMENT }));
 
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
             return ERROR("{}: An \"%IF\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
-        statementNode = std::move(conditionalNode);
+        statementNode = std::move(ifStatementNode);
     }
     else if (token.data == "ELSE")
     {
@@ -102,63 +102,63 @@ ErrorOr<std::unique_ptr<INode>> parse_switch_statement(Parser& parser, Parser::C
 
     if (token.data == "SWITCH")
     {
-        auto selectionNode   = std::make_unique<SelectionStatementNode>();
-        selectionNode->match = TRY(parser.parse({ context.parent, context.child + 1, Parser::Context::Who::SWITCH_STATEMENT }));
+        auto switchStatementNode   = std::make_unique<SwitchStatementNode>();
+        switchStatementNode->match = TRY(parser.parse({ context.parent, context.child + 1, Parser::Context::Who::SWITCH_STATEMENT }));
 
-        if (selectionNode->match != nullptr && !is_expression(selectionNode->match))
-            return ERROR("{}: \"%SWITCH\" statement expects \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), selectionNode->match->type_as_string());
-        if (selectionNode->match == nullptr)
+        if (switchStatementNode->match != nullptr && !is_expression(switchStatementNode->match))
+            return ERROR("{}: \"%SWITCH\" statement expects \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), switchStatementNode->match->type_as_string());
+        if (switchStatementNode->match == nullptr)
             return ERROR("{}: An \"%SWITCH\" statement didn't had a expression to match.", token.location_as_string());
 
-        selectionNode->branches.first  = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::SWITCH_STATEMENT }));
-        selectionNode->branches.second = TRY(parser.parse({ context.child, context.parent, Parser::Context::Who::SWITCH_STATEMENT }));
+        switchStatementNode->branches.first  = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::SWITCH_STATEMENT }));
+        switchStatementNode->branches.second = TRY(parser.parse({ context.child, context.parent, Parser::Context::Who::SWITCH_STATEMENT }));
 
-        if (!(selectionNode->branches.first || selectionNode->branches.second))
+        if (!(switchStatementNode->branches.first || switchStatementNode->branches.second))
             return ERROR("{}: An \"%SWITCH\" statement must have atleast a %DEFAULT case.", token.location_as_string());
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
             return ERROR("{}: An \"%SWITCH\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
-        statementNode = std::move(selectionNode);
+        statementNode = std::move(switchStatementNode);
     }
     else if (token.data == "CASE")
     {
-        auto selectionMatchNode    = std::make_unique<SelectionMatchStatementNode>();
-        selectionMatchNode->match  = TRY(parser.parse({ context.parent, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
+        auto switchCaseNode    = std::make_unique<SwitchCaseStatementNode>();
+        switchCaseNode->match  = TRY(parser.parse({ context.parent, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
 
-        if (selectionMatchNode->match == nullptr)
+        if (switchCaseNode->match == nullptr)
             return ERROR("{}: An \"%CASE\" statement didn't had a expression to match.", token.location_as_string());
-        if (!is_expression(selectionMatchNode->match))
-            return ERROR("{}: \"%CASE\" expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), selectionMatchNode->match->type_as_string());
+        if (!is_expression(switchCaseNode->match))
+            return ERROR("{}: \"%CASE\" expects an \"INode::Type::EXPRESSION\", instead got \"{}\".", token.location_as_string(), switchCaseNode->match->type_as_string());
 
-        selectionMatchNode->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
+        switchCaseNode->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
 
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
             return ERROR("{}: An \"%CASE\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
-        statementNode = std::move(selectionMatchNode);
+        statementNode = std::move(switchCaseNode);
     }
     else if (token.data == "DEFAULT")
     {
-        auto selectionMatchNode    = std::make_unique<SelectionMatchStatementNode>();
-        selectionMatchNode->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
-        selectionMatchNode->match  = [] {
+        auto switchCaseNode    = std::make_unique<SwitchCaseStatementNode>();
+        switchCaseNode->branch = TRY(parser.parse({ context.child, context.child + 1, Parser::Context::Who::CASE_STATEMENT }));
+        switchCaseNode->match  = [] {
             auto literalNode   = std::make_unique<LiteralNode>();
             literalNode->value = "DEFAULT";
             return literalNode;
         }();
 
-        if (selectionMatchNode->branch == nullptr)
+        if (switchCaseNode->branch == nullptr)
             return ERROR("{}: An \"%DEFAULT\" statement didn't had a body.", token.location_as_string());
         if (parser.eof() || (parser.take(), parser.peek().data != "END"))
             return ERROR("{}: An \"%DEFAULT\" statement missing its \"%END\" was reached.", token.location_as_string());
 
         parser.take();
 
-        statementNode = std::move(selectionMatchNode);
+        statementNode = std::move(switchCaseNode);
     }
 
     return statementNode;
@@ -223,12 +223,13 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 
             auto expressionNode   = std::make_unique<ExpressionNode>();
             expressionNode->value = TRY(parse({ context.parent, context.child, Context::Who::EXPRESSION }));
-            root              = std::move(expressionNode);
 
             if (eof())
                 return ERROR("{}: Expected \"]\", but found \"EOF\" instead.", token.location_as_string());
             if (!is_operator(peek()) && !is_right_square_bracket(peek()))
                 return ERROR("{}: Expected \"]\", but found \"{}\" instead.", peek().location_as_string(), peek().type_as_string());
+
+            root = std::move(expressionNode);
 
             break;
         }
@@ -265,7 +266,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
         }
         case Token::Type::COLON: {
             TRY(internal::context_identify(context, token));
-            root = std::make_unique<BodyNode>();
+            root = std::make_unique<ScopeNode>();
             break;
         }
         case Token::Type::OPERATOR: {
