@@ -31,9 +31,7 @@ ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorCo
 
 ErrorOr<std::string> evaluate_unary_operator(OperatorNode const* operatorNode, PreprocessorContext const& context)
 {
-    auto const lhs = TRY([&] -> ErrorOr<std::string> {
-        return TRY(evaluate(operatorNode->lhs, context));
-    }());
+    auto const lhs = TRY(evaluate(operatorNode->lhs, context));
 
     if (operatorNode->name == "NOT") return TRY(internal::decay_to_boolean(lhs)) ? "FALSE"s : "TRUE"s;
 
@@ -47,13 +45,8 @@ ErrorOr<std::string> evaluate_binary_operator(OperatorNode const* operatorNode, 
         return ERROR("Operator \"{}\" is a binary operator and expects both an left-hand and an right-hand side, but only the former was given.", operatorNode->name);
     }
 
-    auto const lhs = TRY([&] -> ErrorOr<std::string> {
-        return TRY(evaluate(operatorNode->lhs, context));
-    }());
-
-    auto const rhs = TRY([&] -> ErrorOr<std::string> {
-        return TRY(evaluate(operatorNode->rhs, context));
-    }());
+    auto const lhs = TRY(evaluate(operatorNode->lhs, context));
+    auto const rhs = TRY(evaluate(operatorNode->rhs, context));
 
     if (operatorNode->name == "CONTAINS") return lhs.contains(rhs)              ? "TRUE"s : "FALSE"s;
     if (operatorNode->name == "EQUALS")   return lhs == rhs                     ? "TRUE"s : "FALSE"s;
