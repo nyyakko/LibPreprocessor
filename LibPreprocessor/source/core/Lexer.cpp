@@ -208,7 +208,7 @@ static std::vector<std::string> split_string(std::string_view string, std::strin
                           element.data(), element.data() + std::strlen(element.data()), separator.begin(), separator.end());
                   std::string result {};
                   std::ranges::copy(begin, end, std::back_inserter(result));
-                  return result;
+                  return result.empty() ? "\n" : result;
               }),
         std::back_inserter(result)
     );
