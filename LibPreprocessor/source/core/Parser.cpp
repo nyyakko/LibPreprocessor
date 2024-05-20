@@ -226,7 +226,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 
             if (eof())
                 return ERROR("{}: Expected \"]\", but found \"EOF\" instead.", token.location_as_string());
-            if (!is_operator(peek()) && !is_right_square_bracket(peek()))
+            if (!(is_operator(peek()) || is_right_square_bracket(peek())))
                 return ERROR("{}: Expected \"]\", but found \"{}\" instead.", peek().location_as_string(), peek().type_as_string());
 
             root = std::move(expressionNode);
@@ -236,7 +236,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
         case Token::Type::RIGHT_SQUARE_BRACKET: {
             TRY(internal::context_identify(context, token));
 
-            if (!eof() && !is_operator(peek()))
+            if (!(eof() || is_operator(peek())))
             {
                 TRY(internal::context_requires_trailing_colon(context, peek()));
                 return root;
@@ -261,7 +261,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
         }
         case Token::Type::RIGHT_ANGLE_BRACKET: {
             TRY(internal::context_identify(context, token));
-            if (!eof() && !is_operator(peek())) return root;
+            if (!(eof() || is_operator(peek()))) return root;
             break;
         }
         case Token::Type::COLON: {

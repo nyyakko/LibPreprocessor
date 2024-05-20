@@ -65,17 +65,12 @@ ErrorOr<std::string> evaluate_operator(ExpressionNode const* expressionNode, Pre
 
     switch (operatorNode->arity)
     {
-    case OperatorNode::Arity::UNARY: {
-        return evaluate_unary_operator(operatorNode, context);
-    }
-    case OperatorNode::Arity::BINARY: {
-        return evaluate_binary_operator(operatorNode, context);
-    }
+    case OperatorNode::Arity::BEGIN__: break;
 
-    case OperatorNode::Arity::BEGIN__:
-    case OperatorNode::Arity::END__: {
-        break;
-    }
+    case OperatorNode::Arity::UNARY:  return evaluate_unary_operator(operatorNode, context);
+    case OperatorNode::Arity::BINARY: return evaluate_binary_operator(operatorNode, context);
+
+    case OperatorNode::Arity::END__: break;
     }
 
     return ERROR("Operator \"{}\" had an invalid arity.", operatorNode->name);
