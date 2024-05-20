@@ -178,7 +178,7 @@ std::optional<Token> Lexer::next_content()
         token->data += MUST(take());
     }
 
-    auto const justifyCount = std::ranges::count(token->data, '*');
+    auto const justifyCount = std::ranges::count(token->data, '@');
 
     if (justifyCount)
     {

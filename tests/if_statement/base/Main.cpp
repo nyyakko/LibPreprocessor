@@ -47,7 +47,7 @@ TEST(true_if_statement, single_justified)
     {
     auto static constexpr source =
         "%IF [<TRUE>]:\n"
-        "    * hello!\n"
+        "    @ hello!\n"
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
@@ -57,7 +57,7 @@ TEST(true_if_statement, single_justified)
     {
     auto static constexpr source =
         "%IF [<TRUE>]:\n"
-        "        ** hello!\n"
+        "        @@ hello!\n"
         "%END\n"sv;
 
     auto const result = libpreprocessor::preprocess(source, context);
