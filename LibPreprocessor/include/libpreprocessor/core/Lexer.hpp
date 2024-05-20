@@ -1,12 +1,23 @@
 #pragma once
 
 #include "Token.hpp"
+#include "nodes/Nodes.hpp"
 
 #include <liberror/ErrorOr.hpp>
 
 #include <optional>
 
 namespace libpreprocessor {
+
+static constexpr std::array special_g  { '%', '[', '<', '>', ']', ':', ' ' };
+static constexpr std::array keyword_g  { "IF", "END", "ELSE", "SWITCH", "CASE", "DEFAULT", "PRINT" };
+static constexpr std::array operator_g {
+    std::pair { "AND"      , OperatorNode::Arity::BINARY },
+    std::pair { "CONTAINS" , OperatorNode::Arity::BINARY },
+    std::pair { "EQUALS"   , OperatorNode::Arity::BINARY },
+    std::pair { "OR"       , OperatorNode::Arity::BINARY },
+    std::pair { "NOT"      , OperatorNode::Arity::UNARY  },
+};
 
 class Lexer
 {

@@ -20,10 +20,6 @@ static std::string read_file_contents(std::filesystem::path file);
 
 static constexpr std::string_view unknown_file_location_g = "Local/Global Variable";
 
-static constexpr std::array special_g  { '%', '[', '<', '>', ']', ':', ' ' };
-static constexpr std::array keyword_g  { "IF", "END", "ELSE", "SWITCH", "CASE", "DEFAULT", "PRINT" };
-static constexpr std::array operator_g { "AND", "OR", "NOT", "EQUALS", "CONTAINS" };
-
 Lexer::Lexer(std::string_view source)
     : _source(internal::split_string(source, "\n"))
     , _cursor({})
@@ -46,7 +42,7 @@ std::vector<Token> Lexer::tokenize()
         while (!eof())
         {
             auto const skipped = skip_spaces(*this);
-            auto token    = *next_special()
+            auto token = *next_special()
                     .or_else([this] () { return next_keyword(); })
                     .or_else([this] () { return next_operator(); })
                     .or_else([this] () { return next_identifier(); })
@@ -144,7 +140,7 @@ std::optional<Token> Lexer::next_operator()
 
     token->type = Token::Type::OPERATOR;
 
-    if (std::ranges::find(operator_g, token->data) == operator_g.end())
+    if (std::ranges::find(operator_g, token->data, &decltype(operator_g)::value_type::first) == operator_g.end())
     {
         _cursor.second -= token->data.size();
         return std::nullopt;
