@@ -30,7 +30,6 @@ void restore_stdout(int state)
     setvbuf(stdout, NULL, _IONBF, BUFFER_SIZE);
 }
 
-#if 0
 TEST(print_statement, simple)
 {
     using namespace std::literals;
@@ -48,7 +47,6 @@ TEST(print_statement, simple)
 
     EXPECT_STREQ(buffer.data(), "hello!\n");
 }
-#endif
 
 TEST(print_statement, single_string_interpolation)
 {

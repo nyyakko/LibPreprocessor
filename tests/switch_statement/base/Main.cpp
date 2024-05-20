@@ -2,6 +2,36 @@
 
 #include <libpreprocessor/Preprocessor.hpp>
 
+TEST(multiple_switch_statement_match, single_case_no_default_preprocessor_context)
+{
+    using namespace std::literals;
+
+    libpreprocessor::PreprocessorContext context {
+        .environmentVariables = {
+            { "ENV:TEST", "TESTING" }
+        }
+    };
+
+    auto static constexpr source =
+        "%SWITCH [<|ENV:TEST|>]:\n"
+        "    %CASE [<TESTING>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "%END\n"
+        "%SWITCH [<ENV:TEST>]:\n"
+        "    %CASE [<TESTING>]:\n"
+        "        hello!\n"
+        "    %END\n"
+        "    %DEFAULT:\n"
+        "        wew!\n"
+        "    %END\n"
+        "%END\n"sv;
+
+    auto const result = libpreprocessor::preprocess(source, context);
+    EXPECT_EQ(!result.has_value(), false);
+    EXPECT_STREQ(result.value().data(), "        hello!\n        wew!\n");
+}
+
 TEST(multiple_switch_statement_no_match, single_case_no_default)
 {
     using namespace std::literals;

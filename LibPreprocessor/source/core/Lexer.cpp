@@ -178,6 +178,14 @@ std::optional<Token> Lexer::next_content()
         token->data += MUST(take());
     }
 
+    auto const justifyCount = std::ranges::count(token->data, '*');
+
+    if (justifyCount)
+    {
+        // FIXME: find a better way to handle this
+        token->data = (token->data | std::views::drop(justifyCount * 4 + justifyCount + 1)).data();
+    }
+
     token->type = Token::Type::CONTENT;
 
     return token;
