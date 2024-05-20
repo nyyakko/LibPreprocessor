@@ -11,7 +11,7 @@ TEST(tokenization_print_statement, missing_closing_square_bracket)
     auto static constexpr source = "%PRINT [<hello!>\n"sv;
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 8): Expected \"]\", but found \"EOF\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 8): Expected \"]\", but found \"EOF\" instead.");
 }
 
 TEST(tokenization_print_statement, missing_closing_angle_bracket_1)
@@ -27,7 +27,7 @@ TEST(tokenization_print_statement, missing_closing_angle_bracket_1)
     auto static constexpr source = "%PRINT [<ENV:TEST]\n"sv;
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 18): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 18): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
 }
 
 TEST(tokenization_print_statement, missing_closing_angle_bracket_2)
@@ -43,7 +43,7 @@ TEST(tokenization_print_statement, missing_closing_angle_bracket_2)
     auto static constexpr source = "%PRINT [<TEST: ENV:TEST]\n"sv;
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 24): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 24): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
 }
 
 TEST(tokenization_print_statement, stray_colon_token)
@@ -59,7 +59,7 @@ TEST(tokenization_print_statement, stray_colon_token)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 18): A stray token of type \"Token::Type::COLON\" was reached.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 18): A stray token of type \"Token::Type::COLON\" was reached.");
     }
     {
     auto static constexpr source =
@@ -67,7 +67,7 @@ TEST(tokenization_print_statement, stray_colon_token)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 18): A stray token of type \"Token::Type::COLON\" was reached.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 18): A stray token of type \"Token::Type::COLON\" was reached.");
     }
 }
 

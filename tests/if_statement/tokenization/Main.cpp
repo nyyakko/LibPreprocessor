@@ -13,7 +13,7 @@ TEST(tokenization_if_statement, missing_body_end)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): An \"%IF\" statement missing its \"%END\" was reached.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): An \"%IF\" statement missing its \"%END\" was reached.");
 }
 
 TEST(tokenization_if_statement, missing_closing_angle_bracket_1)
@@ -29,7 +29,7 @@ TEST(tokenization_if_statement, missing_closing_angle_bracket_1)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 11): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 11): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
 }
 
 TEST(tokenization_if_statement, missing_closing_angle_bracket_2)
@@ -45,7 +45,7 @@ TEST(tokenization_if_statement, missing_closing_angle_bracket_2)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 23): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 23): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
 }
 
 TEST(tokenization_if_statement, missing_closing_square_bracket_1)
@@ -61,7 +61,7 @@ TEST(tokenization_if_statement, missing_closing_square_bracket_1)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): Expected \"]\", but found \"Token::Type::COLON\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): Expected \"]\", but found \"Token::Type::COLON\" instead.");
 }
 
 TEST(tokenization_if_statement, missing_closing_square_bracket_2)
@@ -77,7 +77,7 @@ TEST(tokenization_if_statement, missing_closing_square_bracket_2)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 24): Expected \"]\", but found \"Token::Type::COLON\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 24): Expected \"]\", but found \"Token::Type::COLON\" instead.");
 }
 
 TEST(tokenization_if_statement, missing_condition)
@@ -94,7 +94,7 @@ TEST(tokenization_if_statement, missing_condition)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): An \"%IF\" statement didn't had a condition.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): An \"%IF\" statement didn't had a condition.");
     }
     {
     auto static constexpr source =
@@ -103,7 +103,7 @@ TEST(tokenization_if_statement, missing_condition)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): An \"%IF\" statement didn't had a condition.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): An \"%IF\" statement didn't had a condition.");
     }
 }
 
@@ -122,7 +122,7 @@ TEST(tokenization_if_statement, missing_condition_followed_by_content)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::CONTENT\".");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::CONTENT\".");
     }
     {
     auto static constexpr source =
@@ -132,7 +132,7 @@ TEST(tokenization_if_statement, missing_condition_followed_by_content)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::CONTENT\".");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::CONTENT\".");
     }
 }
 
@@ -152,7 +152,7 @@ TEST(tokenization_if_statement, missing_condition_followed_by_another_statement)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::STATEMENT\".");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::STATEMENT\".");
     }
     {
     auto static constexpr source =
@@ -163,7 +163,7 @@ TEST(tokenization_if_statement, missing_condition_followed_by_another_statement)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::STATEMENT\".");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 4): \"%IF\" statement expects an \"INode::Type::EXPRESSION\", instead got \"INode::Type::STATEMENT\".");
     }
 }
 
@@ -182,7 +182,7 @@ TEST(tokenization_if_statement, missing_colon)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 19): Expected \":\", but found \"Token::Type::CONTENT\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (2, 19): Expected \":\", but found \"Token::Type::CONTENT\" instead.");
     }
     {
     auto static constexpr source =
@@ -192,7 +192,7 @@ TEST(tokenization_if_statement, missing_colon)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 19): Expected \":\", but found \"Token::Type::CONTENT\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (2, 19): Expected \":\", but found \"Token::Type::CONTENT\" instead.");
     }
 }
 

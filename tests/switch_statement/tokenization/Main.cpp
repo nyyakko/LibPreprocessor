@@ -13,7 +13,7 @@ TEST(tokenization_switch_statement, missing_body_end)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): An \"%SWITCH\" statement missing its \"%END\" was reached.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%SWITCH\" statement missing its \"%END\" was reached.");
 }
 
 TEST(tokenization_switch_statement_no_match, missing_angle_bracket_1)
@@ -31,7 +31,7 @@ TEST(tokenization_switch_statement_no_match, missing_angle_bracket_1)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 14): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (2, 14): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
 }
 
 TEST(tokenization_switch_statement_no_match, missing_angle_bracket_2)
@@ -49,7 +49,7 @@ TEST(tokenization_switch_statement_no_match, missing_angle_bracket_2)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): Expected \">\", but found \"Token::Type::RIGHT_SQUARE_BRACKET\" instead.");
 }
 
 TEST(tokenization_switch_statement_no_match, missing_square_bracket_1)
@@ -67,7 +67,7 @@ TEST(tokenization_switch_statement_no_match, missing_square_bracket_1)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 15): Expected \"]\", but found \"Token::Type::COLON\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (2, 15): Expected \"]\", but found \"Token::Type::COLON\" instead.");
 }
 
 TEST(tokenization_switch_statement_no_match, missing_square_bracket_2)
@@ -85,7 +85,7 @@ TEST(tokenization_switch_statement_no_match, missing_square_bracket_2)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 13): Expected \"]\", but found \"Token::Type::COLON\" instead.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 13): Expected \"]\", but found \"Token::Type::COLON\" instead.");
 }
 
 TEST(tokenization_switch_statement, missing_match_expression_without_default)
@@ -102,7 +102,7 @@ TEST(tokenization_switch_statement, missing_match_expression_without_default)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): An \"%SWITCH\" statement didn't had a expression to match.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%SWITCH\" statement didn't had a expression to match.");
     }
     {
     auto static constexpr source =
@@ -111,7 +111,7 @@ TEST(tokenization_switch_statement, missing_match_expression_without_default)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): An \"%SWITCH\" statement didn't had a expression to match.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%SWITCH\" statement didn't had a expression to match.");
     }
 }
 
@@ -132,7 +132,7 @@ TEST(tokenization_switch_statement, missing_match_expression_with_default)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): An \"%SWITCH\" statement didn't had a expression to match.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%SWITCH\" statement didn't had a expression to match.");
     }
     {
     auto static constexpr source =
@@ -144,7 +144,7 @@ TEST(tokenization_switch_statement, missing_match_expression_with_default)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (0, 12): An \"%SWITCH\" statement didn't had a expression to match.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%SWITCH\" statement didn't had a expression to match.");
     }
 }
 
@@ -166,7 +166,7 @@ TEST(tokenization_switch_statement, missing_case_match_expression)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%CASE\" statement didn't had a expression to match.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (2, 12): An \"%CASE\" statement didn't had a expression to match.");
     }
     {
     auto static constexpr source =
@@ -179,7 +179,7 @@ TEST(tokenization_switch_statement, missing_case_match_expression)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (1, 12): An \"%CASE\" statement didn't had a expression to match.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (2, 12): An \"%CASE\" statement didn't had a expression to match.");
     }
 }
 
@@ -201,7 +201,7 @@ TEST(tokenization_switch_statement, missing_default_case_colon)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (3, 18): An \"%DEFAULT\" statement didn't had a body.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (4, 18): An \"%DEFAULT\" statement didn't had a body.");
     }
     {
     auto static constexpr source =
@@ -214,7 +214,7 @@ TEST(tokenization_switch_statement, missing_default_case_colon)
 
     auto const result = libpreprocessor::preprocess(source, context);
     EXPECT_EQ(!result.has_value(), true);
-    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (3, 18): An \"%DEFAULT\" statement didn't had a body.");
+    EXPECT_STREQ(result.error().message().data(), "[LibPreprocessor::Runtime/error]: Local/Global Variable: (4, 18): An \"%DEFAULT\" statement didn't had a body.");
     }
 }
 

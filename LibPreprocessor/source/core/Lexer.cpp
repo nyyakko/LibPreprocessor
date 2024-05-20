@@ -58,7 +58,7 @@ std::vector<Token> Lexer::tokenize()
 
             token.location = {
                 { _file.empty() ? unknown_file_location_g : _file.string() },
-                { _cursor.first, _cursor.second + token.data.size() - 1 }
+                { _cursor.first + 1, _cursor.second + token.data.size() - 1 }
             };
 
             _tokens.emplace_back(std::move(token));
