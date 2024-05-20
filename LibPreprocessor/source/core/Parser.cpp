@@ -23,7 +23,7 @@ static constexpr std::array binaryOperators_g { "AND", "OR", "EQUALS", "CONTAINS
 
 namespace {
 
-ErrorOr<std::unique_ptr<INode>> parse_operator_node(Parser& parser, Parser::Context const& context, Token const& token, std::unique_ptr<INode>& node)
+ErrorOr<std::unique_ptr<INode>> parse_operator_node(Parser& parser, Parser::Context const& context, Token const& token, std::unique_ptr<INode> node)
 {
     auto operatorNode   = std::make_unique<OperatorNode>();
     operatorNode->name  = token.data;
@@ -267,7 +267,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
         }
         case Token::Type::OPERATOR: {
             TRY(internal::context_identify(context, token));
-            return TRY(parse_operator_node(*this, context, token, *root));
+            return TRY(parse_operator_node(*this, context, token, std::move(*root)));
         }
         case Token::Type::CONTENT: {
             auto contentNode     = std::make_unique<ContentNode>();
