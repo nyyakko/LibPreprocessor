@@ -191,7 +191,7 @@ std::optional<Token> Lexer::next_content()
 
 namespace libpreprocessor::internal {
 
-static std::vector<std::string> split_string(std::string_view string, std::string_view separator)
+std::vector<std::string> split_string(std::string_view string, std::string_view separator)
 {
     std::vector<std::string> result {};
     std::ranges::copy(
@@ -211,7 +211,7 @@ static std::vector<std::string> split_string(std::string_view string, std::strin
     return result;
 }
 
-static std::string read_file_contents(std::filesystem::path file)
+std::string read_file_contents(std::filesystem::path file)
 {
     std::ifstream inputStream { file };
     std::stringstream contentStream {};

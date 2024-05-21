@@ -301,7 +301,7 @@ ErrorOr<std::unique_ptr<INode>> Parser::parse(Context const& context)
 
 namespace libpreprocessor::internal {
 
-static ErrorOr<void> context_identify(Parser::Context const& context, Token const& token)
+ErrorOr<void> context_identify(Parser::Context const& context, Token const& token)
 {
     if (context.whois == Parser::Context::Who::BEGIN__ ||
         context.whois == Parser::Context::Who::END__)
@@ -309,7 +309,7 @@ static ErrorOr<void> context_identify(Parser::Context const& context, Token cons
     return {};
 }
 
-static ErrorOr<void> context_requires_trailing_colon(Parser::Context const& context, Token const& token)
+ErrorOr<void> context_requires_trailing_colon(Parser::Context const& context, Token const& token)
 {
     switch (context.whois)
     {
