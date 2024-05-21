@@ -65,12 +65,13 @@ ErrorOr<std::string> evaluate_operator(ExpressionNode const* expressionNode, Pre
 
     switch (operatorNode->arity)
     {
-    case OperatorNode::Arity::BEGIN__: break;
-
     case OperatorNode::Arity::UNARY:  return evaluate_unary_operator(operatorNode, context);
     case OperatorNode::Arity::BINARY: return evaluate_binary_operator(operatorNode, context);
 
-    case OperatorNode::Arity::END__: break;
+    case OperatorNode::Arity::BEGIN__: break;
+    case OperatorNode::Arity::END__: {
+        break;
+    }
     }
 
     return ERROR("Operator \"{}\" had an invalid arity.", operatorNode->name);
@@ -100,6 +101,8 @@ ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorCo
     case INode::Type::LITERAL:    return evaluate_literal(expressionNode, context);
     case INode::Type::EXPRESSION: return evaluate(expressionNode->value, context);
 
+    case INode::Type::BEGIN__:
+    case INode::Type::END__:
     default: {
         return ERROR("Unexpected node of type \"{}\" was reached.", expressionNode->type_as_string());
     }
@@ -195,7 +198,7 @@ ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::string
         break;
     }
 
-    case IStatementNode::Type::START__:
+    case IStatementNode::Type::BEGIN__:
     case IStatementNode::Type::END__:
     default: {
         return ERROR("Unexpected statement node of type \"{}\" was reached.", node->type_as_string());
@@ -250,7 +253,7 @@ static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstr
     case INode::Type::OPERATOR:
     case INode::Type::LITERAL:
 
-    case INode::Type::START__:
+    case INode::Type::BEGIN__:
     case INode::Type::END__:
     default: {
         return ERROR("Unexpected node of type \"{}\" was reached.", head->type_as_string());

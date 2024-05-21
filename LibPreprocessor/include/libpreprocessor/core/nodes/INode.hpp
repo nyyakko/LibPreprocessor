@@ -13,7 +13,7 @@ struct INode
 {
     enum class Type
     {
-        START__,
+        BEGIN__,
         STATEMENT,
         EXPRESSION,
         CONTENT,

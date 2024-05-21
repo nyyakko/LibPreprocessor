@@ -14,7 +14,7 @@ struct IStatementNode : INode
 
     enum class Type
     {
-        START__,
+        BEGIN__,
         IF,
         SWITCH,
         SWITCH_CASE,
