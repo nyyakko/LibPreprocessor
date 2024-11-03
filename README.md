@@ -21,7 +21,7 @@ target_link_libraries(CoolProject PRIVATE LibError::LibError LibPreprocessor::Li
 
 # examples
 ```c++
-#include <liberror/ErrorOr.hpp>
+#include <liberror/Maybe.hpp>
 #include <libpreprocessor/Preprocessor.hpp>
 
 #include <print>
@@ -61,7 +61,7 @@ int main()
 ```
 
 ```c++
-#include <liberror/ErrorOr.hpp>
+#include <liberror/Maybe.hpp>
 #include <libpreprocessor/Preprocessor.hpp>
 
 #include <print>

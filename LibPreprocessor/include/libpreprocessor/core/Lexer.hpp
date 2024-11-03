@@ -3,7 +3,7 @@
 #include "Token.hpp"
 #include "nodes/Nodes.hpp"
 
-#include <liberror/ErrorOr.hpp>
+#include <liberror/Maybe.hpp>
 
 #include <optional>
 
@@ -37,13 +37,13 @@ private:
         return _cursor.second >= _source.at(_cursor.first).size();
     }
 
-    liberror::ErrorOr<char> peek() const
+    liberror::Maybe<char> peek() const
     {
         if (eof()) return liberror::make_error("End of file reached");
         return _source.at(_cursor.first).at(_cursor.second);
     }
 
-    liberror::ErrorOr<char> take()
+    liberror::Maybe<char> take()
     {
         if (eof()) return liberror::make_error("End of file reached");
         return _source.at(_cursor.first).at(_cursor.second++);

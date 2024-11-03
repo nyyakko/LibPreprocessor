@@ -3,7 +3,7 @@
 #include "Token.hpp"
 #include "nodes/INode.hpp"
 
-#include <liberror/ErrorOr.hpp>
+#include <liberror/Maybe.hpp>
 
 #include <ranges>
 #include <stack>
@@ -43,8 +43,8 @@ public:
         }
     }
 
-    liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse({}); }
-    liberror::ErrorOr<std::unique_ptr<INode>> parse(Context const& context);
+    liberror::Maybe<std::unique_ptr<INode>> parse() { return this->parse({}); }
+    liberror::Maybe<std::unique_ptr<INode>> parse(Context const& context);
 
     bool eof() const noexcept { return _tokens.empty(); }
     Token const& peek() const { return _tokens.top(); }
