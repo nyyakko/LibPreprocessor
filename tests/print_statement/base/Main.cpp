@@ -22,6 +22,7 @@ int redirect_stdout_to_buffer(std::array<char, BUFFER_SIZE>& buffer)
 
 void restore_stdout(int state)
 {
+    assert(state >= 0 && "STATE WAS LESS THAN ZERO");
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     (void)freopen("NUL", "a", stdout);

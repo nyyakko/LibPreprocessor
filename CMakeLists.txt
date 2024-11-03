@@ -18,8 +18,8 @@ CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 CPMAddPackage(
     NAME LibError
     GITHUB_REPOSITORY nyyakko/LibError
-    GIT_TAG master
-    VERSION 27c056f
+    GIT_TAG 27c056f
+    # VERSION 27c056f
     OPTIONS "ENABLE_CLANGTIDY OFF" "ENABLE_CPPCHECK OFF"
 )
 
