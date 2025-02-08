@@ -1,4 +1,4 @@
-#include "core/Lexer.hpp"
+#include "Lexer.hpp"
 
 #include <fmt/format.h>
 
@@ -16,28 +16,28 @@ namespace internal {
 static std::vector<std::string> split_string(std::string_view string, std::string_view separator);
 static std::string read_file_contents(std::filesystem::path file);
 
-}
+} // namespace internal
 
 static constexpr std::string_view unknown_file_location_g = "Local/Global Variable";
 
 Lexer::Lexer(std::string_view source)
-    : _source(internal::split_string(source, "\n"))
-    , _cursor({})
-    , _tokens({})
+    : source(internal::split_string(source, "\n"))
+    , cursor({})
+    , tokens({})
 {
 }
 
 Lexer::Lexer(std::filesystem::path file)
-    : _file(file)
-    , _source(internal::split_string(internal::read_file_contents(file), "\n"))
-    , _cursor({})
-    , _tokens({})
+    : file(file)
+    , source(internal::split_string(internal::read_file_contents(file), "\n"))
+    , cursor({})
+    , tokens({})
 {
 }
 
 std::vector<Token> Lexer::tokenize()
 {
-    for (; _cursor.first < _source.size(); _cursor.first += 1)
+    for (; cursor.first < source.size(); cursor.first += 1)
     {
         while (!eof())
         {
@@ -48,22 +48,22 @@ std::vector<Token> Lexer::tokenize()
                     .or_else([this] () { return next_identifier(); })
                     .or_else([this] () { return next_literal(); })
                     .or_else([this, skipped] () {
-                        _cursor.second -= skipped;
+                        cursor.second -= skipped;
                         return next_content();
                     });
 
             token.location = {
-                { _file.empty() ? unknown_file_location_g : _file.string() },
-                { _cursor.first + 1, _cursor.second + token.data.size() - 1 }
+                { file.empty() ? unknown_file_location_g : file.string() },
+                { cursor.first + 1, cursor.second + token.data.size() - 1 }
             };
 
-            _tokens.emplace_back(std::move(token));
+            tokens.emplace_back(std::move(token));
         }
 
-        _cursor.second = 0;
+        cursor.second = 0;
     }
 
-    return _tokens;
+    return tokens;
 }
 
 std::optional<Token> Lexer::next_special()
@@ -100,7 +100,7 @@ std::optional<Token> Lexer::next_keyword()
 
     if (std::ranges::find(keyword_g, token->data) == keyword_g.end())
     {
-        _cursor.second -= token->data.size();
+        cursor.second -= token->data.size();
         return std::nullopt;
     }
 
@@ -109,7 +109,7 @@ std::optional<Token> Lexer::next_keyword()
 
 std::optional<Token> Lexer::next_identifier()
 {
-    if (_tokens.empty() || _tokens.back().type != Token::Type::LEFT_ANGLE_BRACKET) return std::nullopt;
+    if (tokens.empty() || tokens.back().type != Token::Type::LEFT_ANGLE_BRACKET) return std::nullopt;
 
     std::optional<Token> token { Token {} };
 
@@ -122,7 +122,7 @@ std::optional<Token> Lexer::next_identifier()
 
     if (std::size(internal::split_string(token->data, ":")) != 2)
     {
-        _cursor.second -= token->data.size();
+        cursor.second -= token->data.size();
         return std::nullopt;
     }
 
@@ -142,7 +142,7 @@ std::optional<Token> Lexer::next_operator()
 
     if (std::ranges::find(operator_g, token->data, &decltype(operator_g)::value_type::first) == operator_g.end())
     {
-        _cursor.second -= token->data.size();
+        cursor.second -= token->data.size();
         return std::nullopt;
     }
 
@@ -151,7 +151,7 @@ std::optional<Token> Lexer::next_operator()
 
 std::optional<Token> Lexer::next_literal()
 {
-    if (_tokens.empty() || _tokens.back().type != Token::Type::LEFT_ANGLE_BRACKET) return std::nullopt;
+    if (tokens.empty() || tokens.back().type != Token::Type::LEFT_ANGLE_BRACKET) return std::nullopt;
 
     std::optional<Token> token { Token {} };
 
@@ -187,11 +187,9 @@ std::optional<Token> Lexer::next_content()
     return token;
 }
 
-}
+} // namespace libpreprocessor
 
-namespace libpreprocessor::internal {
-
-std::vector<std::string> split_string(std::string_view string, std::string_view separator)
+std::vector<std::string> libpreprocessor::internal::split_string(std::string_view string, std::string_view separator)
 {
     std::vector<std::string> result {};
     std::ranges::copy(
@@ -211,13 +209,11 @@ std::vector<std::string> split_string(std::string_view string, std::string_view 
     return result;
 }
 
-std::string read_file_contents(std::filesystem::path file)
+std::string libpreprocessor::internal::read_file_contents(std::filesystem::path file)
 {
     std::ifstream inputStream { file };
     std::stringstream contentStream {};
     contentStream << inputStream.rdbuf();
     return contentStream.str();
-}
-
 }
 

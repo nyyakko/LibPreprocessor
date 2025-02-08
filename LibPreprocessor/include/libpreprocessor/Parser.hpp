@@ -3,7 +3,7 @@
 #include "Token.hpp"
 #include "nodes/INode.hpp"
 
-#include <liberror/ErrorOr.hpp>
+#include <liberror/Result.hpp>
 
 #include <ranges>
 #include <stack>
@@ -43,8 +43,8 @@ public:
         }
     }
 
-    liberror::ErrorOr<std::unique_ptr<INode>> parse() { return this->parse({}); }
-    liberror::ErrorOr<std::unique_ptr<INode>> parse(Context const& context);
+    liberror::Result<std::unique_ptr<INode>> parse() { return this->parse({}); }
+    liberror::Result<std::unique_ptr<INode>> parse(Context const& context);
 
     bool eof() const noexcept { return _tokens.empty(); }
     Token const& peek() const { return _tokens.top(); }
@@ -54,8 +54,6 @@ public:
 private:
     std::stack<Token> _tokens {};
 };
-
-#define LIBPREPROCESSOR_STRINGIFY(x) #x
 
 constexpr char const* Parser::Context::who_is_as_string() const noexcept
 {
@@ -77,5 +75,5 @@ constexpr char const* Parser::Context::who_is_as_string() const noexcept
     return "UNKNOWN";
 }
 
-} // libpreprocessor
+} // namespace libpreprocessor
 

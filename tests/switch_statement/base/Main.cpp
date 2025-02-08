@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <libpreprocessor/Preprocessor.hpp>
+#include <libpreprocessor/Processor.hpp>
 
 TEST(multiple_switch_statement_match, single_case_no_default_preprocessor_context)
 {
@@ -27,7 +27,7 @@ TEST(multiple_switch_statement_match, single_case_no_default_preprocessor_contex
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        hello!\n        wew!\n");
 }
@@ -50,7 +50,7 @@ TEST(multiple_switch_statement_no_match, single_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "");
 }
@@ -79,7 +79,7 @@ TEST(multiple_switch_statement_no_match, multiple_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "");
 }
@@ -105,7 +105,7 @@ TEST(surrounded_multiple_switch_statement_no_match, single_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\nhello!\nhello!\n");
 }
@@ -137,7 +137,7 @@ TEST(surrounded_multiple_switch_statement_no_match, multiple_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\nhello!\nhello!\n");
 }
@@ -155,7 +155,7 @@ TEST(switch_statement_no_match, single_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "");
 }
@@ -176,7 +176,7 @@ TEST(switch_statement_no_match, multiple_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "");
 }
@@ -196,7 +196,7 @@ TEST(surrounded_switch_statement_no_match, single_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\nhello!\n");
 }
@@ -219,7 +219,7 @@ TEST(surrounded_switch_statement_no_match, multiple_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\nhello!\n");
 }
@@ -237,7 +237,7 @@ TEST(switch_statement, single_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        hello!\n");
 }
@@ -258,7 +258,7 @@ TEST(switch_statement, multiple_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        how are you?\n");
 }
@@ -279,7 +279,7 @@ TEST(switch_statement, single_case_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        how are you?\n");
 }
@@ -303,7 +303,7 @@ TEST(switch_statement, multiple_case_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        how are you?\n");
 }
@@ -326,7 +326,7 @@ TEST(multiple_switch_statement, single_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        hello!\n        hello!\n");
 }
@@ -355,7 +355,7 @@ TEST(multiple_switch_statement, multiple_case_no_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        how are you?\n        how are you?\n");
 }
@@ -384,7 +384,7 @@ TEST(multiple_switch_statement, single_case_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        how are you?\n        how are you?\n");
 }
@@ -419,7 +419,7 @@ TEST(multiple_switch_statement, multiple_case_default)
         "    %END\n"
         "%END\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "        how are you?\n        how are you?\n");
 }
@@ -439,7 +439,7 @@ TEST(surrounded_switch_statement, single_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        hello!\nhello!\n");
 }
@@ -462,7 +462,7 @@ TEST(surrounded_switch_statement, multiple_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        how are you?\nhello!\n");
 }
@@ -485,7 +485,7 @@ TEST(surrounded_switch_statement, single_case_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        how are you?\nhello!\n");
 }
@@ -511,7 +511,7 @@ TEST(surrounded_switch_statement, multiple_case_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        how are you?\nhello!\n");
 }
@@ -537,7 +537,7 @@ TEST(surrounded_multiple_switch_statement, single_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        hello!\nhello!\n        hello!\nhello!\n");
 }
@@ -569,7 +569,7 @@ TEST(surrounded_multiple_switch_statement, multiple_case_no_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        how are you?\nhello!\n        how are you?\nhello!\n");
 }
@@ -601,7 +601,7 @@ TEST(surrounded_multiple_switch_statement, single_case_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        how are you?\nhello!\n        how are you?\nhello!\n");
 }
@@ -639,7 +639,7 @@ TEST(surrounded_multiple_switch_statement, multiple_case_default)
         "%END\n"
         "hello!\n"sv;
 
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     EXPECT_EQ(!result.has_value(), false);
     EXPECT_STREQ(result.value().data(), "hello!\n        how are you?\nhello!\n        how are you?\nhello!\n");
 }

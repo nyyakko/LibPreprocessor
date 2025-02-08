@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <libpreprocessor/Preprocessor.hpp>
+#include <libpreprocessor/Processor.hpp>
 
 #include <stdio.h>
 #include <array>
@@ -16,7 +16,6 @@ int redirect_stdout_to_buffer(std::array<char, BUFFER_SIZE>& buffer)
     (void)freopen("NUL", "a", stdout);
 #pragma clang diagnostic pop
     setvbuf(stdout, buffer.data(), _IOFBF, buffer.size());
-
     return previousState;
 }
 
@@ -26,6 +25,7 @@ void restore_stdout(int state)
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     (void)freopen("NUL", "a", stdout);
 #pragma clang diagnostic pop
+    assert(state >= 0);
     dup2(state, fileno(stdout));
     setvbuf(stdout, NULL, _IONBF, BUFFER_SIZE);
 }
@@ -40,7 +40,7 @@ TEST(print_statement, simple)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -62,7 +62,7 @@ TEST(print_statement, single_string_interpolation)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -84,7 +84,7 @@ TEST(print_statement, normal_with_single_string_interpolation)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -106,7 +106,7 @@ TEST(print_statement, single_string_interpolation_ignore)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -128,7 +128,7 @@ TEST(print_statement, normal_with_single_string_interpolation_ignored)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -150,7 +150,7 @@ TEST(print_statement, multiple_interpolated_string)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -172,7 +172,7 @@ TEST(print_statement, multiple_interpolated_string_with_one_ignored)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);
@@ -194,7 +194,7 @@ TEST(print_statement, multiple_interpolated_string_with_all_ignored)
 
     std::array<char, BUFFER_SIZE> buffer {};
     auto const previousState = redirect_stdout_to_buffer(buffer);
-    auto const result = libpreprocessor::preprocess(source, context);
+    auto const result = libpreprocessor::process(source, context);
     restore_stdout(previousState);
 
     EXPECT_EQ(!result.has_value(), false);

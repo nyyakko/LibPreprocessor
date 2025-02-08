@@ -21,8 +21,8 @@ target_link_libraries(CoolProject PRIVATE LibError::LibError LibPreprocessor::Li
 
 # examples
 ```c++
-#include <liberror/ErrorOr.hpp>
-#include <libpreprocessor/Preprocessor.hpp>
+#include <liberror/Maybe.hpp>
+#include <libpreprocessor/Processor.hpp>
 
 #include <print>
 
@@ -54,15 +54,15 @@ int main()
         "%END\n"sv;
 #endif
 
-    auto const result = MUST(libpreprocessor::preprocess(source, context));
+    auto const result = MUST(libpreprocessor::process(source, context));
 
     std::println("{}", result);
 }
 ```
 
 ```c++
-#include <liberror/ErrorOr.hpp>
-#include <libpreprocessor/Preprocessor.hpp>
+#include <liberror/Maybe.hpp>
+#include <libpreprocessor/Processor.hpp>
 
 #include <print>
 
@@ -89,7 +89,7 @@ int main()
         "%END\n"
         "this line too..."sv;
 
-    auto const result = MUST(libpreprocessor::preprocess(source, context));
+    auto const result = MUST(libpreprocessor::process(source, context));
 
     std::println("{}", result);
 }

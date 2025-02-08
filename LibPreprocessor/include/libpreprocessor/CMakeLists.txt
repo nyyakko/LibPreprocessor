@@ -1,9 +1,13 @@
-add_subdirectory(core)
+add_subdirectory(nodes)
 
 set(DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(LibPreprocessor_HeaderFiles ${LibPreprocessor_HeaderFiles}
-    "${DIR}/Preprocessor.hpp"
+    "${DIR}/Processor.hpp"
+    "${DIR}/Lexer.hpp"
+    "${DIR}/Parser.hpp"
+    "${DIR}/Token.hpp"
+    "${DIR}/Interpreter.hpp"
 
     PARENT_SCOPE
 )

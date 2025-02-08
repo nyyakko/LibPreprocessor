@@ -1,7 +1,8 @@
-#include "core/Interpreter.hpp"
+#include "Interpreter.hpp"
 
-#include "core/nodes/Nodes.hpp"
+#include "nodes/Nodes.hpp"
 
+#include <liberror/Try.hpp>
 #include <fmt/format.h>
 
 #include <sstream>
@@ -15,21 +16,21 @@ using namespace std::literals;
 
 namespace internal {
 
-static ErrorOr<size_t> decay_to_integer(std::string_view literal);
-static ErrorOr<bool> decay_to_boolean(std::string_view literal);
-static ErrorOr<std::string> interpolate(std::string_view string, PreprocessorContext const& context);
+static Result<size_t> decay_to_integer(std::string_view literal);
+static Result<bool> decay_to_boolean(std::string_view literal);
+static Result<std::string> interpolate(std::string_view string, PreprocessorContext const& context);
 
-}
+} // namespace internal
 
 namespace detail {
 
-static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context);
+static Result<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context);
 
 namespace {
 
-ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorContext const& context);
+Result<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorContext const& context);
 
-ErrorOr<std::string> evaluate_unary_operator(OperatorNode const* operatorNode, PreprocessorContext const& context)
+Result<std::string> evaluate_unary_operator(OperatorNode const* operatorNode, PreprocessorContext const& context)
 {
     auto const lhs = TRY(evaluate(operatorNode->lhs, context));
 
@@ -38,7 +39,7 @@ ErrorOr<std::string> evaluate_unary_operator(OperatorNode const* operatorNode, P
     return ERROR("Unknown unary operator \"{}\" was reached.", operatorNode->name);
 }
 
-ErrorOr<std::string> evaluate_binary_operator(OperatorNode const* operatorNode, PreprocessorContext const& context)
+Result<std::string> evaluate_binary_operator(OperatorNode const* operatorNode, PreprocessorContext const& context)
 {
     if (operatorNode->rhs == nullptr)
     {
@@ -56,7 +57,7 @@ ErrorOr<std::string> evaluate_binary_operator(OperatorNode const* operatorNode, 
     return ERROR("Unknown binary operator \"{}\" was reached.", operatorNode->name);
 }
 
-ErrorOr<std::string> evaluate_operator(ExpressionNode const* expressionNode, PreprocessorContext const& context)
+Result<std::string> evaluate_operator(ExpressionNode const* expressionNode, PreprocessorContext const& context)
 {
     auto* operatorNode = static_cast<OperatorNode*>(expressionNode->value.get());
 
@@ -77,14 +78,14 @@ ErrorOr<std::string> evaluate_operator(ExpressionNode const* expressionNode, Pre
     return ERROR("Operator \"{}\" had an invalid arity.", operatorNode->name);
 }
 
-ErrorOr<std::string> evaluate_literal(ExpressionNode const* expressionNode, PreprocessorContext const& context)
+Result<std::string> evaluate_literal(ExpressionNode const* expressionNode, PreprocessorContext const& context)
 {
     auto const* literalNode = static_cast<LiteralNode const*>(expressionNode->value.get());
     if (literalNode == nullptr) return ERROR("literalNode was nullptr.");
     return internal::interpolate(literalNode->value, context);
 }
 
-ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
+Result<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
 {
     if (head == nullptr) return ERROR("Head node was nullptr.");
 
@@ -111,7 +112,7 @@ ErrorOr<std::string> evaluate(std::unique_ptr<INode> const& head, PreprocessorCo
     return "FALSE"s;
 }
 
-ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
+Result<void> traverse_if_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
 {
     auto const* node = static_cast<IfStatementNode const*>(statementNode);
 
@@ -123,7 +124,7 @@ ErrorOr<void> traverse_if_statement(IStatementNode const* statementNode, std::st
     return {};
 }
 
-ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
+Result<void> traverse_switch_statement(IStatementNode const* statementNode, std::stringstream& stream, PreprocessorContext const& context)
 {
     if (statementNode->statement_type() == IStatementNode::Type::SWITCH_CASE)
     {
@@ -164,14 +165,14 @@ ErrorOr<void> traverse_switch_statement(IStatementNode const* statementNode, std
     return {};
 }
 
-ErrorOr<void> traverse_print_statement(IStatementNode const* statementNode, PreprocessorContext const& context)
+Result<void> traverse_print_statement(IStatementNode const* statementNode, PreprocessorContext const& context)
 {
     auto const* node = static_cast<PrintStatementNode const*>(statementNode);
     fmt::println("{}", TRY(evaluate(node->content, context)));
     return {};
 }
 
-ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
+Result<void> traverse_statement(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
 {
     if (head == nullptr) return ERROR("Head node was nullptr.");
 
@@ -208,7 +209,7 @@ ErrorOr<void> traverse_statement(std::unique_ptr<INode> const& head, std::string
     return {};
 }
 
-ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringstream& stream)
+Result<void> traverse_content(std::unique_ptr<INode> const& head, std::stringstream& stream)
 {
     if (head == nullptr) return ERROR("Head node was nullptr.");
 
@@ -230,7 +231,7 @@ ErrorOr<void> traverse_content(std::unique_ptr<INode> const& head, std::stringst
 
 }
 
-static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
+static Result<void> traverse(std::unique_ptr<INode> const& head, std::stringstream& stream, PreprocessorContext const& context)
 {
     if (head == nullptr) return ERROR("Head node was nullptr.");
 
@@ -268,20 +269,18 @@ static ErrorOr<void> traverse(std::unique_ptr<INode> const& head, std::stringstr
     return {};
 }
 
-}
+} // namespace detail
 
-ErrorOr<std::string> interpret(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
+Result<std::string> interpret(std::unique_ptr<INode> const& head, PreprocessorContext const& context)
 {
     std::stringstream sourceStream {};
     TRY(detail::traverse(head, sourceStream, context));
     return sourceStream.str();
 }
 
-}
+} // namespace libpreprocessor
 
-namespace libpreprocessor::internal {
-
-ErrorOr<size_t> decay_to_integer(std::string_view literal)
+liberror::Result<size_t> libpreprocessor::internal::decay_to_integer(std::string_view literal)
 {
     if (literal.empty()) return ERROR("Cannot decay an empty literal.");
     std::stringstream stream {};
@@ -292,7 +291,7 @@ ErrorOr<size_t> decay_to_integer(std::string_view literal)
     return value;
 }
 
-ErrorOr<bool> decay_to_boolean(std::string_view literal)
+liberror::Result<bool> libpreprocessor::internal::decay_to_boolean(std::string_view literal)
 {
     if (literal.empty()) return ERROR("Cannot decay an empty literal.");
     if (literal == "TRUE") return true;
@@ -305,12 +304,12 @@ ErrorOr<bool> decay_to_boolean(std::string_view literal)
     return static_cast<bool>(result.value());
 }
 
-ErrorOr<std::string> interpolate(std::string_view string, PreprocessorContext const& context)
+liberror::Result<std::string> libpreprocessor::internal::interpolate(std::string_view string, PreprocessorContext const& context)
 {
     if (string.empty()) return ERROR("Tried to interpolate an empty string.");
     if (!string.contains("|")) return string.data();
 
-    ErrorOr<std::string> result {};
+    Result<std::string> result {};
 
     for (auto index = 0zu; index < string.size(); index += 1)
     {
@@ -347,7 +346,5 @@ ErrorOr<std::string> interpolate(std::string_view string, PreprocessorContext co
     }
 
     return result;
-}
-
 }
 

@@ -86,5 +86,5 @@ constexpr bool is_operator(Token const& token) { return token.type == Token::Typ
 constexpr bool is_keyword(Token const& token) { return token.type == Token::Type::KEYWORD; }
 constexpr bool is_content(Token const& token) { return token.type == Token::Type::CONTENT; }
 
-} // libpreprocessor
+} // namespace libpreprocessor
 
