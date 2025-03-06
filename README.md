@@ -21,7 +21,8 @@ target_link_libraries(CoolProject PRIVATE LibError::LibError LibPreprocessor::Li
 
 # examples
 ```c++
-#include <liberror/Maybe.hpp>
+#include <liberror/Try.hpp>
+#include <liberror/Result.hpp>
 #include <libpreprocessor/Processor.hpp>
 
 #include <print>
@@ -61,7 +62,8 @@ int main()
 ```
 
 ```c++
-#include <liberror/Maybe.hpp>
+#include <liberror/Try.hpp>
+#include <liberror/Result.hpp>
 #include <libpreprocessor/Processor.hpp>
 
 #include <print>
