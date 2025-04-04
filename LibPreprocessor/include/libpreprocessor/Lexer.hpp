@@ -7,6 +7,7 @@
 #include <liberror/Try.hpp>
 
 #include <optional>
+#include <array>
 
 namespace libpreprocessor {
 
