@@ -4,6 +4,8 @@ add_subdirectory(include/libpreprocessor)
 add_library(${PROJECT_NAME} STATIC ${LibPreprocessor_SourceFiles})
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME ${PROJECT_NAME} PREFIX "")
+
 target_compile_definitions(
     ${PROJECT_NAME} PRIVATE
         PREFIX_ERROR="[${PROJECT_NAME}::Runtime/error]"
