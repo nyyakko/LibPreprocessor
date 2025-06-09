@@ -25,7 +25,6 @@ if (ENABLE_TESTING)
     enable_tests(${PROJECT_NAME})
 endif()
 
-
 include(cmake/static_analyzers.cmake)
 
 set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
