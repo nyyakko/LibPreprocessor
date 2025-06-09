@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.25)
 
 project(LibPreprocessor LANGUAGES CXX)
 
-include(cmake/static_analyzers.cmake)
 include(cmake/get_cpm.cmake)
 include(cmake/enable_tests.cmake)
 include(GNUInstallDirs)
@@ -26,8 +25,12 @@ if (ENABLE_TESTING)
     enable_tests(${PROJECT_NAME})
 endif()
 
-set(LibPreprocessor_ExternalLibraries LibError::LibError)
+
+include(cmake/static_analyzers.cmake)
+
 set(LibPreprocessor_CompilerOptions ${LibPreprocessor_CompilerOptions} -Wno-gnu-statement-expression-from-macro-expansion)
 # set(LibPreprocessor_LinkerOptions ${LibPreprocessor_LinkerOptions})
+
+set(LibPreprocessor_ExternalLibraries LibError::LibError)
 
 add_subdirectory(LibPreprocessor)
