@@ -2,9 +2,11 @@
 
 # installation
 
-you may copy the files under LibPreprocessor/include into your project, install it with [CPM](https://github.com/cpm-cmake/CPM.cmake) or install directly into your system with the following: 
+you may install it with [CPM](https://github.com/cpm-cmake/CPM.cmake) or install directly into your system with the following:
 
-* ``py install.py``
+```bash
+python install.py
+```
 
 and then include it with cmake into your project
 
@@ -13,32 +15,19 @@ cmake_minimum_required_version(VERSION 3.25)
 
 project(CoolProject LANGUAGES CXX)
 
-find_package(libpreprocessor CONFIG REQUIRED)
-find_package(liberror CONFIG REQUIRED)
+find_package(LibPreprocessor CONFIG REQUIRED)
 add_executable(CoolProject source.cpp)
-target_link_libraries(CoolProject PRIVATE LibError::LibError LibPreprocessor::LibPreprocessor)
+target_link_libraries(CoolProject PRIVATE LibPreprocessor::LibPreprocessor)
 ```
 
 # examples
 ```c++
-#include <liberror/Try.hpp>
-#include <liberror/Result.hpp>
 #include <libpreprocessor/Processor.hpp>
 
-#include <print>
+#include <iostream>
 
 int main()
 {
-    using namespace std::literals;
-
-#if 1
-    libpreprocessor::PreprocessorContext context {};
-
-    auto static constexpr source =
-        "%IF [NOT <FALSE>]:\n"
-        "    %PRINT [<hello!>]\n"
-        "%END\n"sv;
-#else
     std::print("Enter your name: ");
     std::string name {};
     std::cin >> name;
@@ -53,20 +42,23 @@ int main()
         "%IF [NOT <FALSE>]:\n"
         "    %PRINT [<hello: <ENV:USERNAME>!>]\n"
         "%END\n"sv;
-#endif
 
-    auto const result = MUST(libpreprocessor::process(source, context));
+    auto const result = libpreprocessor::process(source, context);
 
-    std::println("{}", result);
+    if (!result.has_value())
+    {
+        std::cerr << result.error().message() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    std::cout << result.value() << '\n';
 }
 ```
 
 ```c++
-#include <liberror/Try.hpp>
-#include <liberror/Result.hpp>
 #include <libpreprocessor/Processor.hpp>
 
-#include <print>
+#include <iostream>
 
 int main()
 {
@@ -87,13 +79,19 @@ int main()
         "%IF [<ENV:LIKEPOTATOES> EQUALS <yes>]:\n"
         "    awesome!\n"
         "%ELSE:\n"
-        "    what a shame!\n"
+        "    what a shame...\n"
         "%END\n"
         "this line too..."sv;
 
-    auto const result = MUST(libpreprocessor::process(source, context));
+    auto const result = libpreprocessor::process(source, context);
 
-    std::println("{}", result);
+    if (!result.has_value())
+    {
+        std::cerr << result.error().message() << '\n';
+        return EXIT_FAILURE;
+    }
+
+    std::cout << result.value() << '\n';
 }
 ```
 
